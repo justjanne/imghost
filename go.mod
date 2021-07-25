@@ -3,6 +3,7 @@ module git.kuschku.de/justjanne/imghost-frontend
 go 1.13
 
 require (
+	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/hibiken/asynq v0.18.2
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/justjanne/imgconv v1.0.3 // indirect

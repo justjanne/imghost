@@ -71,9 +71,9 @@ func NewAlbumImageRepo(db *sqlx.DB) (repo AlbumImages, err error) {
 	return repo, nil
 }
 
-func (repo AlbumImages) List(album model.Album) (images []model.AlbumImage, err error) {
+func (repo AlbumImages) List(albumId string) (images []model.AlbumImage, err error) {
 	rows, err := repo.queryList.Queryx(map[string]interface{}{
-		"albumId": album.Id,
+		"albumId": albumId,
 	})
 	if err != nil {
 		return
@@ -89,9 +89,9 @@ func (repo AlbumImages) List(album model.Album) (images []model.AlbumImage, err 
 	return
 }
 
-func (repo AlbumImages) Get(album model.Album, imageId string) (image model.AlbumImage, err error) {
+func (repo AlbumImages) Get(albumId string, imageId string) (image model.AlbumImage, err error) {
 	err = repo.queryGet.Get(&image, map[string]interface{}{
-		"albumId": album.Id,
+		"albumId": albumId,
 		"imageId": imageId,
 	})
 	return

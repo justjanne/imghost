@@ -1,0 +1,65 @@
+auth:
+  role_prefix: "imghost"
+
+queue:
+  concurrency: 10
+  log_level: "info"
+  strict_priority: false
+  queues:
+    critical: 6
+    default: 3
+    low: 1
+
+database:
+  type: "postgres"
+  url: "postgresql://imghost:hunter2@db.example.com/imghost"
+
+redis:
+  address: ":6379"
+  password: ""
+
+conversion:
+  task_id: "image:resize"
+  max_retry: 10
+  timeout: "3m"
+  queue: "default"
+  unique_timeout: "3m"
+  quality:
+    compression_quality: 100
+    sampling_factors: [ 1,1 ]
+  sizes:
+    - suffix: "s"
+      size:
+        width: 90
+        height: 90
+        format: "cover"
+    - suffix: "b"
+      size:
+        width: 160
+        height: 160
+        format: "cover"
+    - suffix: "t"
+      size:
+        width: 160
+        height: 160
+        format: "contain"
+    - suffix: "m"
+      size:
+        width: 320
+        height: 320
+        format: "contain"
+    - suffix: "l"
+      size:
+        width: 640
+        height: 640
+        format: "contain"
+    - suffix: "h"
+      size:
+        width: 1024
+        height: 1024
+        format: "contain"
+    - suffix: ""
+      size:
+        width: 0
+        height: 0
+        format: "contain"
