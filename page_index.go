@@ -1,12 +1,13 @@
 package main
 
 import (
+	"git.kuschku.de/justjanne/imghost-frontend/model"
 	"net/http"
 	"strings"
 )
 
 type IndexData struct {
-	User UserInfo
+	User model.User
 }
 
 func removeFileExtensions(path string) string {

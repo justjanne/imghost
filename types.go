@@ -2,18 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/justjanne/imgconv"
 	"os"
-	"time"
 )
 
-type Image struct {
-	Id           string `json:"id"`
-	Title        string
-	Description  string
-	CreatedAt    time.Time
-	OriginalName string
-	MimeType     string `json:"mime_type"`
-}
 
 type Result struct {
 	Id      string   `json:"id"`
@@ -21,25 +13,9 @@ type Result struct {
 	Errors  []string `json:"errors"`
 }
 
-type Size struct {
-	Width  uint   `json:"width"`
-	Height uint   `json:"height"`
-	Format string `json:"format"`
-}
-
-const (
-	sizeFormatCover   = "cover"
-	sizeFormatContain = "contain"
-)
-
-type Quality struct {
-	CompressionQuality uint      `json:"compression_quality"`
-	SamplingFactors    []float64 `json:"sampling_factors"`
-}
-
 type SizeDefinition struct {
-	Size   Size   `json:"size"`
-	Suffix string `json:"suffix"`
+	Size   imgconv.Size `json:"size"`
+	Suffix string       `json:"suffix"`
 }
 
 type RedisConfig struct {
@@ -54,7 +30,7 @@ type DatabaseConfig struct {
 
 type Config struct {
 	Sizes         []SizeDefinition
-	Quality       Quality
+	Quality       imgconv.Quality
 	SourceFolder  string
 	TargetFolder  string
 	Redis         RedisConfig
@@ -66,8 +42,8 @@ type Config struct {
 func NewConfigFromEnv() Config {
 	config := Config{}
 
-	json.Unmarshal([]byte(os.Getenv("IK8R_SIZES")), &config.Sizes)
-	json.Unmarshal([]byte(os.Getenv("IK8R_QUALITY")), &config.Quality)
+	_ = json.Unmarshal([]byte(os.Getenv("IK8R_SIZES")), &config.Sizes)
+	_ = json.Unmarshal([]byte(os.Getenv("IK8R_QUALITY")), &config.Quality)
 	config.SourceFolder = os.Getenv("IK8R_SOURCE_FOLDER")
 	config.TargetFolder = os.Getenv("IK8R_TARGET_FOLDER")
 	config.Redis.Address = os.Getenv("IK8R_REDIS_ADDRESS")

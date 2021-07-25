@@ -1,20 +1,21 @@
 package main
 
 import (
-	"net/http"
-	"fmt"
-	"time"
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
+	"fmt"
+	"git.kuschku.de/justjanne/imghost-frontend/model"
 	"io"
 	"mime/multipart"
-	"path/filepath"
+	"net/http"
 	"os"
-	"encoding/base64"
-	"crypto/rand"
+	"path/filepath"
+	"time"
 )
 
 type UploadData struct {
-	User    UserInfo
+	User    model.User
 	Results []Result
 }
 
@@ -54,21 +55,21 @@ func writeBody(reader io.ReadCloser, path string) error {
 	return out.Close()
 }
 
-func createImage(config *Config, body io.ReadCloser, fileHeader *multipart.FileHeader) (Image, error) {
+func createImage(config *Config, body io.ReadCloser, fileHeader *multipart.FileHeader) (model.Image, error) {
 	id := generateId()
 	path := filepath.Join(config.SourceFolder, id)
 
 	err := writeBody(body, path)
 	if err != nil {
-		return Image{}, err
+		return model.Image{}, err
 	}
 
 	mimeType, err := detectMimeType(path)
 	if err != nil {
-		return Image{}, err
+		return model.Image{}, err
 	}
 
-	image := Image{
+	image := model.Image{
 		Id:           id,
 		OriginalName: filepath.Base(fileHeader.Filename),
 		CreatedAt:    time.Now(),
@@ -77,7 +78,7 @@ func createImage(config *Config, body io.ReadCloser, fileHeader *multipart.FileH
 	return image, nil
 }
 
-func pageUpload(ctx PageContext) http.Handler {
+func pageUpload(ctx PageContext) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "POST" {
 			user := parseUser(r)

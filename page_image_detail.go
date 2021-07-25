@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"git.kuschku.de/justjanne/imghost-frontend/model"
 	_ "github.com/lib/pq"
 	"net/http"
 	"os"
@@ -9,9 +10,8 @@ import (
 )
 
 type ImageDetailData struct {
-	User   UserInfo
-	Image  Image
-	IsMine bool
+	User   model.User
+	Image  model.Image
 }
 
 func pageImageDetail(ctx PageContext) http.Handler {
@@ -37,7 +37,7 @@ func pageImageDetail(ctx PageContext) http.Handler {
 			return
 		}
 
-		var info Image
+		var info model.Image
 
 		if result.Next() {
 			var owner string
@@ -90,7 +90,6 @@ func pageImageDetail(ctx PageContext) http.Handler {
 			if err = formatTemplate(w, "image_detail.html", ImageDetailData{
 				user,
 				info,
-				owner == user.Id,
 			}); err != nil {
 				panic(err)
 			}
