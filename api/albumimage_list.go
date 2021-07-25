@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func ListAlbumImages(env environment.Environment) http.Handler {
+func ListAlbumImages(env environment.FrontendEnvironment) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		vars := mux.Vars(request)
 		albumImages, err := env.Repositories.AlbumImages.List(vars["albumId"])

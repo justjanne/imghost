@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func GetImage(env environment.Environment) http.Handler {
+func GetImage(env environment.FrontendEnvironment) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		vars := mux.Vars(request)
 		image, err := env.Repositories.Images.Get(vars["imageId"])

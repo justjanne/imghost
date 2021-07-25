@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	var config configuration.Configuration
+	var config configuration.BackendConfiguration
 	configFile, err := os.Open("config.yaml")
 	if err != nil {
 		panic(err)
@@ -22,14 +22,14 @@ func main() {
 		panic(err)
 	}
 
-	env, err := environment.NewServerEnvironment(config)
+	env, err := environment.NewBackendEnvironment(config)
 	if err != nil {
 		panic(err)
 	}
 	defer env.Destroy()
 
 	mux := asynq.NewServeMux()
-	mux.HandleFunc(config.Conversion.ResizeTaskId, task.HandleImageResizeTask)
+	mux.Handle(config.Conversion.TaskId, task.NewImageProcessor(env))
 	if err := env.QueueServer.Run(mux); err != nil {
 		log.Fatalf("could not run server: %v", err)
 	}

@@ -3,20 +3,21 @@ package environment
 import (
 	"git.kuschku.de/justjanne/imghost-frontend/configuration"
 	"git.kuschku.de/justjanne/imghost-frontend/repo"
+	"git.kuschku.de/justjanne/imghost-frontend/storage"
 	"github.com/hibiken/asynq"
 	"github.com/jmoiron/sqlx"
 	"time"
 )
 
-type Environment struct {
-	Configuration configuration.Configuration
+type FrontendEnvironment struct {
+	Configuration configuration.FrontendConfiguration
 	QueueClient   *asynq.Client
-	QueueServer   *asynq.Server
 	Database      *sqlx.DB
 	Repositories  Repositories
+	Storage       storage.Storage
 }
 
-func newCommonEnvironment(config configuration.Configuration) (env Environment, err error) {
+func NewFrontendEnvironment(config configuration.FrontendConfiguration) (env FrontendEnvironment, err error) {
 	env.Configuration = config
 	if env.Database, err = sqlx.Open(config.Database.Type, config.Database.Url); err != nil {
 		return
@@ -30,13 +31,8 @@ func newCommonEnvironment(config configuration.Configuration) (env Environment, 
 	if env.Repositories.AlbumImages, err = repo.NewAlbumImageRepo(env.Database); err != nil {
 		return
 	}
-	return
-}
-
-func NewClientEnvironment(config configuration.Configuration) (Environment, error) {
-	env, err := newCommonEnvironment(config)
-	if err != nil {
-		return env, err
+	if env.Storage, err = storage.NewStorage(env.Configuration.Storage); err != nil {
+		return
 	}
 	env.QueueClient = asynq.NewClient(asynq.RedisClientOpt{
 		Addr:     config.Redis.Address,
@@ -52,37 +48,12 @@ func NewClientEnvironment(config configuration.Configuration) (Environment, erro
 	return env, err
 }
 
-func NewServerEnvironment(config configuration.Configuration) (Environment, error) {
-	env, err := newCommonEnvironment(config)
-	if err != nil {
-		return env, err
-	}
-	env.QueueServer = asynq.NewServer(
-		asynq.RedisClientOpt{
-			Addr:     config.Redis.Address,
-			Password: config.Redis.Password,
-		},
-		asynq.Config{
-			Concurrency:    config.Queue.Concurrency,
-			LogLevel:       asynq.LogLevel(config.Queue.LogLevel),
-			Queues:         config.Queue.Queues,
-			StrictPriority: config.Queue.StrictPriority,
-		},
-	)
-	return env, err
-}
-
-func (env Environment) Destroy() error {
+func (env FrontendEnvironment) Destroy() error {
 	if err := env.Database.Close(); err != nil {
 		return err
 	}
-	if env.QueueClient != nil {
-		if err := env.QueueClient.Close(); err != nil {
-			return err
-		}
-	}
-	if env.QueueServer != nil {
-		env.QueueServer.Shutdown()
+	if err := env.QueueClient.Close(); err != nil {
+		return err
 	}
 	return nil
 }

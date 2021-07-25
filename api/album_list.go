@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func ListAlbums(env environment.Environment) http.Handler {
+func ListAlbums(env environment.FrontendEnvironment) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		user, err := auth.ParseUser(request, env)
 		if err != nil {

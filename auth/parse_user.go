@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func ParseUser(request *http.Request, env environment.Environment) (user model.User, err error) {
+func ParseUser(request *http.Request, env environment.FrontendEnvironment) (user model.User, err error) {
 	// TODO: Implement actual user auth
 	user = model.User{
 		Id:    "ad45284c-be4d-4546-8171-41cf126ac091",

@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func ListImages(env environment.Environment) http.Handler {
+func ListImages(env environment.FrontendEnvironment) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		user, err := auth.ParseUser(request, env)
 		if err != nil {

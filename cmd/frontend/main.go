@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	var config configuration.Configuration
+	var config configuration.FrontendConfiguration
 	configFile, err := os.Open("config.yaml")
 	if err != nil {
 		panic(err)
@@ -23,7 +23,7 @@ func main() {
 		panic(err)
 	}
 
-	env, err := environment.NewClientEnvironment(config)
+	env, err := environment.NewFrontendEnvironment(config)
 	if err != nil {
 		panic(err)
 	}
@@ -34,6 +34,9 @@ func main() {
 	router.Handle(
 		"/api/v1/images",
 		api.ListImages(env)).Methods(http.MethodGet)
+	router.Handle(
+		"/api/v1/images",
+		api.UploadImage(env)).Methods(http.MethodPost)
 	router.Handle(
 		"/api/v1/images/{imageId}",
 		api.GetImage(env)).Methods(http.MethodGet)

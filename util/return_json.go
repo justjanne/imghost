@@ -7,7 +7,16 @@ import (
 
 func ReturnJson(writer http.ResponseWriter, data interface{}) {
 	writer.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(writer).Encode(data); err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
+	bytes, err := json.Marshal(&data)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	} else {
+		writer.WriteHeader(200)
+		_, err := writer.Write(bytes)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
