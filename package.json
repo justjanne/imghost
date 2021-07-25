@@ -1,9 +1,0 @@
-{
-  "scripts": {
-    "sass": "node_modules/node-sass/bin/node-sass --output-style compressed assets/sass -o assets/css",
-    "build": "npm run sass"
-  },
-  "devDependencies": {
-    "node-sass": "^6.0.0"
-  }
-}
