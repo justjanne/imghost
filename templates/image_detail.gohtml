@@ -1,4 +1,4 @@
-{{- /*gotype: git.kuschku.de/justjanne/imghost-frontend.ImageDetailData*/ -}}
+{{- /*gotype: git.kuschku.de/justjanne/imghost-frontend.ImageViewModel*/ -}}
 <form>
   <h1>User</h1>
   <p>
@@ -27,6 +27,7 @@
   </ul>
 </form>
 <form method="post">
+  <input type="hidden" name="_method" value="post">
   <h1>Image</h1>
   <p>
     <label>
@@ -80,3 +81,4 @@
     <input type="submit">
   </p>
 </form>
+<img src="https://i.k8r.eu/{{.Image.Id}}l"/>

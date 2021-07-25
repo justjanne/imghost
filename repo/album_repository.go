@@ -60,7 +60,8 @@ func (repo AlbumRepository) Get(albumId string) (model.Album, error) {
 				owner,
 				coalesce(title,  ''),
 				coalesce(description, ''),
-        		coalesce(created_at, to_timestamp(0))
+        		coalesce(created_at, to_timestamp(0)),
+        		coalesce(updated_at, to_timestamp(0))
 			FROM albums
 			WHERE id = $1`,
 			albumId)
@@ -71,7 +72,7 @@ func (repo AlbumRepository) Get(albumId string) (model.Album, error) {
 	if result.Next() {
 		if err := result.Scan(
 			&album.Id, &album.Owner, &album.Title, &album.Description,
-			&album.CreatedAt,
+			&album.CreatedAt, &album.UpdatedAt,
 		); err != nil {
 			return album, err
 		}
@@ -121,78 +122,3 @@ func (repo AlbumRepository) Delete(album model.Album) error {
 
 	return nil
 }
-
-func (repo AlbumRepository) AddImage(album model.Album, image model.AlbumImage) error {
-	if _, err := repo.db.Exec(`
-		INSERT INTO album_images (album, image, title, description, position) 
-		VALUES ($1, $2, $3, $4)`,
-		album.Id,
-		image.Id,
-		image.Title,
-		image.Description,
-		image.Position,
-	); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (repo AlbumRepository) GetImages(album model.Album) ([]model.AlbumImage, error) {
-	var albumImages []model.AlbumImage
-
-	result, err := repo.db.Query(`
-			SELECT
-				image,
-				coalesce(title,  ''),
-				coalesce(description, ''),
-			    position
-			FROM album_images`)
-	if err != nil {
-		return albumImages, err
-	}
-
-	for result.Next() {
-		var albumImage model.AlbumImage
-
-		if err := result.Scan(
-			&albumImage.Id, &albumImage.Title, &albumImage.Description,
-			&albumImage.Position,
-		); err != nil {
-			return albumImages, err
-		}
-		albumImages = append(albumImages, albumImage)
-	}
-
-	return albumImages, nil
-}
-
-func (repo AlbumRepository) RemoveImage(album model.Album, imageId string) error {
-	if _, err := repo.db.Exec(
-		"DELETE FROM album_images WHERE album = $1 AND image = $2",
-		album.Id,
-		imageId,
-	); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (repo AlbumRepository) ReorderImages(album model.Album, images []model.AlbumImage) error {
-	if _, err := repo.db.Exec(
-		"DELETE FROM album_images WHERE album = $1",
-		album.Id,
-	); err != nil {
-		return err
-	}
-
-	for _, image := range images {
-		if err := repo.AddImage(album, image); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
