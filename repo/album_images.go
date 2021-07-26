@@ -19,54 +19,75 @@ type AlbumImages struct {
 func NewAlbumImageRepo(db *sqlx.DB) (repo AlbumImages, err error) {
 	repo.db = db
 	repo.queryList, err = db.PrepareNamed(`
-			SELECT album_images.album,
-			       album_images.image,
-			       album_images.title,
-			       album_images.description
+			SELECT album,
+			       image,
+			       title,
+			       description
 			FROM album_images
-			WHERE album_images.album = :albumId
-			ORDER BY album_images.position
+			WHERE album = :albumId
+			ORDER BY position
 		`)
+	if err != nil {
+		return
+	}
 	repo.queryGet, err = db.PrepareNamed(`
-			SELECT album_images.album,
-			       album_images.image,
-			       album_images.title,
-			       album_images.description
+			SELECT album,
+			       image,
+			       title,
+			       description
 			FROM album_images
-			WHERE album_images.album = :albumId
-			AND album_images.image = :imageId
-			ORDER BY album_images.position
+			WHERE album = :albumId
+			AND image = :imageId
+			ORDER BY position
 		`)
+	if err != nil {
+		return
+	}
 	repo.stmtCreate, err = db.PrepareNamed(`
 			INSERT INTO album_images (album, image, title, description, position)
 			VALUES (:albumId, :imageId, :title, :description, (
-			    SELECT COUNT(album_images.image)
+			    SELECT COUNT(image)
 			    FROM album_images
-			    WHERE album_images.album = :albumId
+			    WHERE album = :albumId
 			))
 		`)
+	if err != nil {
+		return
+	}
 	repo.stmtUpdate, err = db.PrepareNamed(`
 			UPDATE album_images 
-			SET album_images.title = :title, 
-			    album_images.description = :description
-			WHERE album_images.album = :albumId
-		    AND album_images.image = :imageId
+			SET title = :title, 
+			    description = :description
+			WHERE album = :albumId
+		    AND image = :imageId
 		`)
+	if err != nil {
+		return
+	}
 	repo.stmtDelete, err = db.PrepareNamed(`
 			DELETE FROM album_images
-			WHERE album_images.album = :albumId
-			AND album_images.image = :imageID
+			WHERE album = :albumId
+			AND image = :imageID
 		`)
+	if err != nil {
+		return
+	}
 	repo.stmtDeleteAll, err = db.PrepareNamed(`
 			DELETE FROM album_images
-			WHERE album_images.album = :albumId
+			WHERE album = :albumId
 		`)
+	if err != nil {
+		return
+	}
 	repo.stmtReorder, err = db.PrepareNamed(`
 			UPDATE album_images 
-			SET album_images.position = :position
-			WHERE album_images.album = :albumId
-		    AND album_images.image = :imageId
+			SET position = :position
+			WHERE album = :albumId
+		    AND image = :imageId
 		`)
+	if err != nil {
+		return
+	}
 
 	return repo, nil
 }

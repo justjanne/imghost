@@ -17,43 +17,58 @@ type Images struct {
 func NewImageRepo(db *sqlx.DB) (repo Images, err error) {
 	repo.db = db
 	repo.queryList, err = db.PrepareNamed(`
-			SELECT images.id,
-			       images.owner,
-			       images.title,
-			       images.description,
-			       images.original_name,
-			       images.created_at,
-			       images.updated_at
+			SELECT id,
+			       owner,
+			       title,
+			       description,
+			       original_name,
+			       created_at,
+			       updated_at
 			FROM images
-			WHERE images.owner = :userId
-			ORDER BY images.created_at DESC
+			WHERE owner = :userId
+			ORDER BY created_at DESC
 		`)
+	if err != nil {
+		return
+	}
 	repo.queryGet, err = db.PrepareNamed(`
-			SELECT images.id,
-			       images.owner,
-			       images.title,
-			       images.description,
-			       images.original_name,
-			       images.created_at,
-			       images.updated_at
+			SELECT id,
+			       owner,
+			       title,
+			       description,
+			       original_name,
+			       created_at,
+			       updated_at
 			FROM images
-			WHERE images.id = :imageId
+			WHERE id = :imageId
 		`)
+	if err != nil {
+		return
+	}
 	repo.stmtCreate, err = db.PrepareNamed(`
-			INSERT INTO images (id, owner, title, description, original_name, type, created_at, updated_at)
-			VALUES (:imageId, :userId, :title, :description, :originalName, :mimeType, NOW(), NOW())
+			INSERT INTO images (id, owner, title, description, original_name, type, created_at, updated_at, state)
+			VALUES (:imageId, :userId, :title, :description, :originalName, :mimeType, NOW(), NOW(), :state)
 		`)
+	if err != nil {
+		return
+	}
 	repo.stmtUpdate, err = db.PrepareNamed(`
 			UPDATE images 
-			SET images.title = :title, 
-			    images.description = :description, 
-			    images.updated_at = NOW()
-			WHERE images.id = :imageId
+			SET title = :title, 
+			    description = :description, 
+			    updated_at = NOW()
+			WHERE id = :imageId
 		`)
+	if err != nil {
+		return
+	}
 	repo.stmtDelete, err = db.PrepareNamed(`
 			DELETE FROM images
-			WHERE images.id = :imageId
+			WHERE id = :imageId
 		`)
+	if err != nil {
+		return
+	}
 
 	return repo, nil
 }
@@ -84,13 +99,14 @@ func (repo Images) Get(imageId string) (image model.Image, err error) {
 }
 
 func (repo Images) Create(new model.Image) (err error) {
-	_, err = repo.stmtUpdate.Exec(map[string]interface{}{
+	_, err = repo.stmtCreate.Exec(map[string]interface{}{
 		"imageId":      new.Id,
 		"userId":       new.Owner,
 		"title":        new.Title,
 		"description":  new.Description,
 		"originalName": new.OriginalName,
 		"mimeType":     new.MimeType,
+		"state":        StateCreated,
 	})
 	return
 }

@@ -6,7 +6,9 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"io"
+	"net/url"
 	"os"
+	"time"
 )
 
 type Storage struct {
@@ -23,24 +25,28 @@ func NewStorage(config configuration.StorageConfiguration) (storage Storage, err
 	return
 }
 
-func (storage Storage) UploadFile(ctx context.Context, bucketName string, fileName string, file *os.File) (err error) {
+func (storage Storage) UploadFile(ctx context.Context, bucketName string, fileName string, mimeType string, file *os.File) (err error) {
 	_, err = storage.s3client.FPutObject(
 		ctx,
 		bucketName,
 		fileName,
 		file.Name(),
-		minio.PutObjectOptions{})
+		minio.PutObjectOptions{
+			ContentType: mimeType,
+		})
 	return
 }
 
-func (storage Storage) Upload(ctx context.Context, bucketName string, fileName string, reader io.ReadCloser) (err error) {
+func (storage Storage) Upload(ctx context.Context, bucketName string, fileName string, mimeType string, reader io.Reader) (err error) {
 	_, err = storage.s3client.PutObject(
 		ctx,
 		bucketName,
 		fileName,
 		reader,
 		-1,
-		minio.PutObjectOptions{})
+		minio.PutObjectOptions{
+			ContentType: mimeType,
+		})
 	return
 }
 
@@ -51,5 +57,15 @@ func (storage Storage) DownloadFile(ctx context.Context, bucketName string, file
 		fileName,
 		file.Name(),
 		minio.GetObjectOptions{})
+	return
+}
+
+func (storage Storage) UrlFor(ctx context.Context, bucketName string, fileName string) (url *url.URL, err error) {
+	url, err = storage.s3client.PresignedGetObject(
+		ctx,
+		bucketName,
+		fileName,
+		7*24*time.Hour,
+		map[string][]string{})
 	return
 }

@@ -15,6 +15,7 @@ type FrontendEnvironment struct {
 	Database      *sqlx.DB
 	Repositories  Repositories
 	Storage       storage.Storage
+	InProgress    map[string]*asynq.TaskInfo
 }
 
 func NewFrontendEnvironment(config configuration.FrontendConfiguration) (env FrontendEnvironment, err error) {
@@ -23,6 +24,9 @@ func NewFrontendEnvironment(config configuration.FrontendConfiguration) (env Fro
 		return
 	}
 	if env.Repositories.Images, err = repo.NewImageRepo(env.Database); err != nil {
+		return
+	}
+	if env.Repositories.ImageStates, err = repo.NewImageStateRepo(env.Database); err != nil {
 		return
 	}
 	if env.Repositories.Albums, err = repo.NewAlbumRepo(env.Database); err != nil {

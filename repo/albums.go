@@ -17,41 +17,56 @@ type Albums struct {
 func NewAlbumRepo(db *sqlx.DB) (repo Albums, err error) {
 	repo.db = db
 	repo.queryList, err = db.PrepareNamed(`
-			SELECT albums.id,
-			       albums.owner,
-			       albums.title,
-			       albums.description,
-			       albums.created_at,
-			       albums.updated_at
+			SELECT id,
+			       owner,
+			       title,
+			       description,
+			       created_at,
+			       updated_at
 			FROM albums
-			WHERE albums.owner = :userId
-			ORDER BY albums.created_at DESC
+			WHERE owner = :userId
+			ORDER BY created_at DESC
 		`)
+	if err != nil {
+		return
+	}
 	repo.queryGet, err = db.PrepareNamed(`
-			SELECT albums.id,
-			       albums.owner,
-			       albums.title,
-			       albums.description,
-			       albums.created_at,
-			       albums.updated_at
+			SELECT id,
+			       owner,
+			       title,
+			       description,
+			       created_at,
+			       updated_at
 			FROM albums
-			WHERE albums.id = :albumId
+			WHERE id = :albumId
 		`)
+	if err != nil {
+		return
+	}
 	repo.stmtCreate, err = db.PrepareNamed(`
 			INSERT INTO albums (id, owner, title, description, created_at, updated_at)
 			VALUES (:albumId, :userId, :title, :description, NOW(), NOW())
 		`)
+	if err != nil {
+		return
+	}
 	repo.stmtUpdate, err = db.PrepareNamed(`
 			UPDATE albums 
-			SET albums.title = :title, 
-			    albums.description = :description, 
-			    albums.updated_at = NOW()
-			WHERE albums.id = :albumId
+			SET title = :title, 
+			    description = :description, 
+			    updated_at = NOW()
+			WHERE id = :albumId
 		`)
+	if err != nil {
+		return
+	}
 	repo.stmtDelete, err = db.PrepareNamed(`
 			DELETE FROM albums
-			WHERE albums.id = :albums
+			WHERE id = :albums
 		`)
+	if err != nil {
+		return
+	}
 
 	return repo, nil
 }
