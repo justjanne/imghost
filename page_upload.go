@@ -114,7 +114,7 @@ func pageUpload(ctx PageContext) http.Handler {
 			}
 
 			pubsub := ctx.Redis.Subscribe(ctx.Config.ResultChannel)
-			_, err = ctx.Database.Exec("INSERT INTO images (id, owner, created_at, updated_at, original_name, type) VALUES ($1, $2, $3, $4, $5)", image.Id, user.Id, image.CreatedAt, image.CreatedAt, image.OriginalName, image.MimeType)
+			_, err = ctx.Database.Exec("INSERT INTO images (id, owner, created_at, updated_at, original_name, type) VALUES ($1, $2, $3, $4, $5, $6)", image.Id, user.Id, image.CreatedAt, image.CreatedAt, image.OriginalName, image.MimeType)
 			if err != nil {
 				panic(err)
 			}
