@@ -1,16 +1,16 @@
 package main
 
 import (
-	"net/http"
-	"fmt"
-	"time"
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io"
 	"mime/multipart"
-	"path/filepath"
+	"net/http"
 	"os"
-	"encoding/base64"
-	"crypto/rand"
+	"path/filepath"
+	"time"
 )
 
 type UploadData struct {
@@ -114,7 +114,7 @@ func pageUpload(ctx PageContext) http.Handler {
 			}
 
 			pubsub := ctx.Redis.Subscribe(ctx.Config.ResultChannel)
-			_, err = ctx.Database.Exec("INSERT INTO images (id, owner, created_at, original_name, type) VALUES ($1, $2, $3, $4, $5)", image.Id, user.Id, image.CreatedAt, image.OriginalName, image.MimeType)
+			_, err = ctx.Database.Exec("INSERT INTO images (id, owner, created_at, updated_at, original_name, type) VALUES ($1, $2, $3, $4, $5)", image.Id, user.Id, image.CreatedAt, image.CreatedAt, image.OriginalName, image.MimeType)
 			if err != nil {
 				panic(err)
 			}
