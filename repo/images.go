@@ -6,13 +6,22 @@ import (
 )
 
 type Images struct {
-	db         *sqlx.DB
-	queryList  *sqlx.NamedStmt
-	queryGet   *sqlx.NamedStmt
-	stmtCreate *sqlx.NamedStmt
-	stmtUpdate *sqlx.NamedStmt
-	stmtDelete *sqlx.NamedStmt
+	db              *sqlx.DB
+	queryList       *sqlx.NamedStmt
+	queryGet        *sqlx.NamedStmt
+	stmtCreate      *sqlx.NamedStmt
+	stmtUpdate      *sqlx.NamedStmt
+	stmtUpdateState *sqlx.NamedStmt
+	stmtDelete      *sqlx.NamedStmt
 }
+
+const (
+	StateCreated    = "created"
+	StateQueued     = "queued"
+	StateInProgress = "in_progress"
+	StateDone       = "done"
+	StateError      = "error"
+)
 
 func NewImageRepo(db *sqlx.DB) (repo Images, err error) {
 	repo.db = db
@@ -23,7 +32,8 @@ func NewImageRepo(db *sqlx.DB) (repo Images, err error) {
 			       description,
 			       original_name,
 			       created_at,
-			       updated_at
+			       updated_at,
+			       state
 			FROM images
 			WHERE owner = :userId
 			ORDER BY created_at DESC
@@ -38,7 +48,8 @@ func NewImageRepo(db *sqlx.DB) (repo Images, err error) {
 			       description,
 			       original_name,
 			       created_at,
-			       updated_at
+			       updated_at,
+			       state
 			FROM images
 			WHERE id = :imageId
 		`)
@@ -57,6 +68,14 @@ func NewImageRepo(db *sqlx.DB) (repo Images, err error) {
 			SET title = :title, 
 			    description = :description, 
 			    updated_at = NOW()
+			WHERE id = :imageId
+		`)
+	if err != nil {
+		return
+	}
+	repo.stmtUpdateState, err = db.PrepareNamed(`
+			UPDATE images
+			SET state = :state
 			WHERE id = :imageId
 		`)
 	if err != nil {
@@ -116,6 +135,14 @@ func (repo Images) Update(changed model.Image) (err error) {
 		"imageId":     changed.Id,
 		"title":       changed.Title,
 		"description": changed.Description,
+	})
+	return
+}
+
+func (repo Images) UpdateState(imageId string, state string) (err error) {
+	_, err = repo.stmtUpdateState.Exec(map[string]interface{}{
+		"imageId": imageId,
+		"state":   state,
 	})
 	return
 }

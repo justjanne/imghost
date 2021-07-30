@@ -139,7 +139,7 @@ func UploadImage(env environment.FrontendEnvironment) http.Handler {
 				return
 			}
 			println("Enqueued task")
-			err = env.Repositories.ImageStates.Update(image.Id, repo.StateQueued)
+			err = env.Repositories.Images.UpdateState(image.Id, repo.StateQueued)
 			if err != nil {
 				println("failed updating image state")
 				http.Error(writer, err.Error(), http.StatusInternalServerError)

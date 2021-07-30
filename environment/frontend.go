@@ -26,9 +26,6 @@ func NewFrontendEnvironment(config configuration.FrontendConfiguration) (env Fro
 	if env.Repositories.Images, err = repo.NewImageRepo(env.Database); err != nil {
 		return
 	}
-	if env.Repositories.ImageStates, err = repo.NewImageStateRepo(env.Database); err != nil {
-		return
-	}
 	if env.Repositories.Albums, err = repo.NewAlbumRepo(env.Database); err != nil {
 		return
 	}

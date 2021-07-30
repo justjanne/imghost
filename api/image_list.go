@@ -3,7 +3,6 @@ package api
 import (
 	"git.kuschku.de/justjanne/imghost-frontend/auth"
 	"git.kuschku.de/justjanne/imghost-frontend/environment"
-	"git.kuschku.de/justjanne/imghost-frontend/model"
 	"git.kuschku.de/justjanne/imghost-frontend/util"
 	"net/http"
 )
@@ -15,15 +14,15 @@ func ListImages(env environment.FrontendEnvironment) http.Handler {
 			http.Error(writer, err.Error(), http.StatusUnauthorized)
 		}
 		images, err := env.Repositories.Images.List(user)
-		var infos []model.ImageInfo
-		for _, image := range images {
-			info, err := EnrichImageInfo(env, image)
+		for idx, image := range images {
+			err = image.LoadUrl(env.Storage, env.Configuration.Storage)
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusInternalServerError)
+				return
 			}
-			infos = append(infos, info)
+			images[idx] = image
 		}
 
-		util.ReturnJson(writer, infos)
+		util.ReturnJson(writer, images)
 	})
 }

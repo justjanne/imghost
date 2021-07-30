@@ -31,7 +31,7 @@ func (processor *ImageProcessor) ProcessTask(ctx context.Context, task *asynq.Ta
 
 	println("parsed task: " + payload.ImageId)
 
-	if err = processor.env.Repositories.ImageStates.Update(payload.ImageId, repo.StateInProgress); err != nil {
+	if err = processor.env.Repositories.Images.UpdateState(payload.ImageId, repo.StateInProgress); err != nil {
 		println("failed to set image state: " + payload.ImageId)
 		println(err.Error())
 		return
@@ -44,7 +44,7 @@ func (processor *ImageProcessor) ProcessTask(ctx context.Context, task *asynq.Ta
 	if err != nil {
 		println("failed to create temp file: " + payload.ImageId)
 		println(err.Error())
-		_ = processor.env.Repositories.ImageStates.Update(payload.ImageId, repo.StateError)
+		_ = processor.env.Repositories.Images.UpdateState(payload.ImageId, repo.StateError)
 		return
 	}
 	err = processor.env.Storage.DownloadFile(
@@ -55,20 +55,20 @@ func (processor *ImageProcessor) ProcessTask(ctx context.Context, task *asynq.Ta
 	if err != nil {
 		println("failed to download file: " + sourceFile.Name())
 		println(err.Error())
-		_ = processor.env.Repositories.ImageStates.Update(payload.ImageId, repo.StateError)
+		_ = processor.env.Repositories.Images.UpdateState(payload.ImageId, repo.StateError)
 		return
 	}
 	if err = wand.ReadImage(sourceFile.Name()); err != nil {
 		println("failed to read file: " + sourceFile.Name())
 		println(err.Error())
-		_ = processor.env.Repositories.ImageStates.Update(payload.ImageId, repo.StateError)
+		_ = processor.env.Repositories.Images.UpdateState(payload.ImageId, repo.StateError)
 		return
 	}
 	var originalImage imgconv.ImageHandle
 	if originalImage, err = imgconv.NewImage(wand); err != nil {
 		println("failed to load file: " + sourceFile.Name())
 		println(err.Error())
-		_ = processor.env.Repositories.ImageStates.Update(payload.ImageId, repo.StateError)
+		_ = processor.env.Repositories.Images.UpdateState(payload.ImageId, repo.StateError)
 		return err
 	}
 
@@ -102,11 +102,11 @@ func (processor *ImageProcessor) ProcessTask(ctx context.Context, task *asynq.Ta
 	if err != nil {
 		println("failed to convert image file")
 		println(err.Error())
-		_ = processor.env.Repositories.ImageStates.Update(payload.ImageId, repo.StateError)
+		_ = processor.env.Repositories.Images.UpdateState(payload.ImageId, repo.StateError)
 		return
 	}
 
-	if err = processor.env.Repositories.ImageStates.Update(payload.ImageId, repo.StateDone); err != nil {
+	if err = processor.env.Repositories.Images.UpdateState(payload.ImageId, repo.StateDone); err != nil {
 		return
 	}
 

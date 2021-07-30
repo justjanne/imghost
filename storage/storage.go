@@ -8,7 +8,7 @@ import (
 	"io"
 	"net/url"
 	"os"
-	"time"
+	"path/filepath"
 )
 
 type Storage struct {
@@ -60,12 +60,8 @@ func (storage Storage) DownloadFile(ctx context.Context, bucketName string, file
 	return
 }
 
-func (storage Storage) UrlFor(ctx context.Context, bucketName string, fileName string) (url *url.URL, err error) {
-	url, err = storage.s3client.PresignedGetObject(
-		ctx,
-		bucketName,
-		fileName,
-		7*24*time.Hour,
-		map[string][]string{})
-	return
+func (storage Storage) UrlFor(bucketName string, fileName string) *url.URL {
+	fileUrl := *storage.s3client.EndpointURL()
+	fileUrl.Path = filepath.Join(fileUrl.Path, bucketName, fileName)
+	return &fileUrl
 }

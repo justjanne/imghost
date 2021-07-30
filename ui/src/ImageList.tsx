@@ -10,16 +10,18 @@ export default function ImageList() {
             <p>{error as string}</p>
             <ul>
                 {data?.map(info => (
-                    <li>
-                        <p>{info.image?.id}</p>
-                        <p>{info.image?.title}</p>
-                        <p>{info.image?.description}</p>
-                        <p>{info.image?.original_name}</p>
-                        <p>{info.image?.mime_type}</p>
-                        <p>{info.image?.created_at}</p>
-                        <p>{info.image?.updated_at}</p>
+                    <li key={info.id}>
+                        <p>{info.id}</p>
+                        <p>{info.owner}</p>
+                        <p>{info.title}</p>
+                        <p>{info.description}</p>
+                        <p>{info.original_name}</p>
+                        <p>{info.mime_type}</p>
+                        <p>{info.created_at}</p>
+                        <p>{info.updated_at}</p>
                         <p>{info.state}</p>
-                        <img src={info.url} alt=""/>
+                        <p>{info.url}</p>
+                        <img src={info.url+"t"} alt=""/>
                     </li>
                 ))}
             </ul>

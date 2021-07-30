@@ -7,4 +7,6 @@ export interface Image {
     updated_at: string,
     original_name: string,
     mime_type: string,
+    state: string,
+    url: string,
 }

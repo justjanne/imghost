@@ -2,6 +2,8 @@ package model
 
 import (
 	"errors"
+	"git.kuschku.de/justjanne/imghost-frontend/configuration"
+	"git.kuschku.de/justjanne/imghost-frontend/storage"
 	"time"
 )
 
@@ -14,6 +16,8 @@ type Image struct {
 	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
 	OriginalName string    `json:"original_name" db:"original_name"`
 	MimeType     string    `json:"mime_type" db:"mime_type"`
+	State        string    `json:"state" db:"state"`
+	Url          string    `json:"url"`
 }
 
 func (image Image) VerifyOwner(user User) error {
@@ -22,4 +26,9 @@ func (image Image) VerifyOwner(user User) error {
 	}
 
 	return nil
+}
+
+func (image *Image) LoadUrl(storage storage.Storage, config configuration.StorageConfiguration) (err error) {
+	image.Url = storage.UrlFor(config.ImageBucket, image.Id).String()
+	return
 }
