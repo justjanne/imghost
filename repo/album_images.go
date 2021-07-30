@@ -138,6 +138,15 @@ func (repo AlbumImages) Update(changed model.AlbumImage) (err error) {
 	return
 }
 
+func (repo AlbumImages) Reorder(changed model.AlbumImage, position int) (err error) {
+	_, err = repo.stmtReorder.Exec(map[string]interface{}{
+		"albumId":  changed.Album,
+		"imageId":  changed.Image,
+		"position": position,
+	})
+	return
+}
+
 func (repo AlbumImages) Delete(changed model.AlbumImage) (err error) {
 	_, err = repo.stmtDelete.Exec(map[string]interface{}{
 		"albumId": changed.Album,
@@ -149,15 +158,6 @@ func (repo AlbumImages) Delete(changed model.AlbumImage) (err error) {
 func (repo AlbumImages) DeleteAll(changed model.AlbumImage) (err error) {
 	_, err = repo.stmtDeleteAll.Exec(map[string]interface{}{
 		"albumId": changed.Album,
-	})
-	return
-}
-
-func (repo AlbumImages) Reorder(changed model.AlbumImage, position int) (err error) {
-	_, err = repo.stmtDeleteAll.Exec(map[string]interface{}{
-		"albumId":  changed.Album,
-		"imageId":  changed.Image,
-		"position": position,
 	})
 	return
 }

@@ -33,33 +33,52 @@ func main() {
 	// Image API
 	router.Handle(
 		"/api/v1/images",
-		api.ListImages(env)).Methods(http.MethodGet)
+		api.ListImages(env)).Methods(http.MethodGet, http.MethodOptions)
 	router.Handle(
 		"/api/v1/images",
-		api.UploadImage(env)).Methods(http.MethodPost)
+		api.UploadImage(env)).Methods(http.MethodPost, http.MethodOptions)
 	router.Handle(
 		"/api/v1/images/{imageId}",
-		api.GetImage(env)).Methods(http.MethodGet)
+		api.GetImage(env)).Methods(http.MethodGet, http.MethodOptions)
+	router.Handle(
+		"/api/v1/images/{imageId}",
+		api.UpdateImage(env)).Methods(http.MethodPost, http.MethodOptions)
+	router.Handle(
+		"/api/v1/images/{imageId}",
+		api.DeleteImage(env)).Methods(http.MethodDelete, http.MethodOptions)
 
 	// Album API
 	router.Handle(
 		"/api/v1/albums",
-		api.ListAlbums(env)).Methods(http.MethodGet)
+		api.ListAlbums(env)).Methods(http.MethodGet, http.MethodOptions)
 	router.Handle(
-		"/api/v1/albums/{imageId}",
-		api.GetAlbum(env)).Methods(http.MethodGet)
+		"/api/v1/albums/{albumId}",
+		api.GetAlbum(env)).Methods(http.MethodGet, http.MethodOptions)
+	router.Handle(
+		"/api/v1/albums/{albumId}",
+		api.UpdateAlbum(env)).Methods(http.MethodPost, http.MethodOptions)
+	router.Handle(
+		"/api/v1/albums/{albumId}/reorder",
+		api.ReorderAlbum(env)).Methods(http.MethodPost, http.MethodOptions)
+	router.Handle(
+		"/api/v1/albums/{albumId}",
+		api.DeleteAlbum(env)).Methods(http.MethodDelete, http.MethodOptions)
 
 	// Album Image API
 	router.Handle(
 		"/api/v1/albums/{albumId}/images",
-		api.ListAlbumImages(env)).Methods(http.MethodGet)
+		api.ListAlbumImages(env)).Methods(http.MethodGet, http.MethodOptions)
 	router.Handle(
 		"/api/v1/albums/{albumId}/images/{imageId}",
-		api.GetAlbumImage(env)).Methods(http.MethodGet)
+		api.GetAlbumImage(env)).Methods(http.MethodGet, http.MethodOptions)
+	router.Handle(
+		"/api/v1/albums/{albumId}/images/{imageId}",
+		api.UpdateAlbumImage(env)).Methods(http.MethodPost, http.MethodOptions)
+	router.Handle(
+		"/api/v1/albums/{albumId}/images/{imageId}",
+		api.DeleteAlbumImage(env)).Methods(http.MethodDelete, http.MethodOptions)
 
-	// TODO: Implement mutating API methods
-
-	if err = http.ListenAndServe(":8080", util.MethodOverride(router)); err != nil {
+	if err = http.ListenAndServe(":8080", util.CorsWrapper(router)); err != nil {
 		panic(err)
 	}
 }

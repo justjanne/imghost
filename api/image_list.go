@@ -1,9 +1,9 @@
 package api
 
 import (
-	"database/sql"
 	"git.kuschku.de/justjanne/imghost-frontend/auth"
 	"git.kuschku.de/justjanne/imghost-frontend/environment"
+	"git.kuschku.de/justjanne/imghost-frontend/model"
 	"git.kuschku.de/justjanne/imghost-frontend/util"
 	"net/http"
 )
@@ -15,14 +15,15 @@ func ListImages(env environment.FrontendEnvironment) http.Handler {
 			http.Error(writer, err.Error(), http.StatusUnauthorized)
 		}
 		images, err := env.Repositories.Images.List(user)
-		if err == sql.ErrNoRows {
-			http.NotFound(writer, request)
-			return
-		} else if err != nil {
-			http.Error(writer, err.Error(), http.StatusInternalServerError)
-			return
+		var infos []model.ImageInfo
+		for _, image := range images {
+			info, err := EnrichImageInfo(env, image)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusInternalServerError)
+			}
+			infos = append(infos, info)
 		}
 
-		util.ReturnJson(writer, images)
+		util.ReturnJson(writer, infos)
 	})
 }
