@@ -19,6 +19,19 @@ func GetAlbum(env environment.FrontendEnvironment) http.Handler {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		album.Images, err = env.Repositories.AlbumImages.List(album.Id)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		for i, image := range album.Images {
+			err = image.LoadUrl(env.Storage, env.Configuration.Storage)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			album.Images[i] = image
+		}
 
 		util.ReturnJson(writer, album)
 	})

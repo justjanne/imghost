@@ -1,3 +1,5 @@
+import {AlbumImage} from "./AlbumImage";
+
 export interface Album {
     id: string,
     owner: string,
@@ -5,4 +7,5 @@ export interface Album {
     description: string,
     created_at: string,
     updated_at: string,
+    images: AlbumImage[],
 }

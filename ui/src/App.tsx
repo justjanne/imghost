@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import ImageList from "./ImageList";
+import ImageList from "./components/ImageList";
 import {BaseUrlProvider} from './api/baseUrlContext';
 import {QueryClient, QueryClientProvider} from "react-query";
 

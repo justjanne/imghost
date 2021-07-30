@@ -6,12 +6,13 @@ import (
 )
 
 type Album struct {
-	Id          string    `json:"id" db:"id"`
-	Owner       string    `json:"owner" db:"owner"`
-	Title       string    `json:"title" db:"title"`
-	Description string    `json:"description" db:"description"`
-	CreatedAt   time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`
+	Id          string       `json:"id" db:"id"`
+	Owner       string       `json:"owner" db:"owner"`
+	Title       string       `json:"title" db:"title"`
+	Description string       `json:"description" db:"description"`
+	CreatedAt   time.Time    `json:"created_at" db:"created_at"`
+	UpdatedAt   time.Time    `json:"updated_at" db:"updated_at"`
+	Images      []AlbumImage `json:"images"`
 }
 
 func (album Album) VerifyOwner(user User) error {

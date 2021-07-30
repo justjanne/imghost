@@ -1,14 +1,14 @@
 import {useQuery} from "react-query";
 import axios from "axios";
 import {useBaseUrl} from "./baseUrlContext";
-import {Image} from "./model/Image";
+import {Album} from "./model/Album";
 
-export const useListImages = () => {
+export const useListAlbums = () => {
     const baseUrl = useBaseUrl();
     return useQuery(
-        "images",
-        () => axios.get<Image[]>(
-            "api/v1/images",
+        "albums",
+        () => axios.get<Album[]>(
+            "api/v1/albums",
             {
                 baseURL: baseUrl
             }

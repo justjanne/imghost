@@ -66,12 +66,6 @@ func main() {
 
 	// Album Image API
 	router.Handle(
-		"/api/v1/albums/{albumId}/images",
-		api.ListAlbumImages(env)).Methods(http.MethodGet, http.MethodOptions)
-	router.Handle(
-		"/api/v1/albums/{albumId}/images/{imageId}",
-		api.GetAlbumImage(env)).Methods(http.MethodGet, http.MethodOptions)
-	router.Handle(
 		"/api/v1/albums/{albumId}/images/{imageId}",
 		api.UpdateAlbumImage(env)).Methods(http.MethodPost, http.MethodOptions)
 	router.Handle(

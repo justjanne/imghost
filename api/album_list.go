@@ -22,6 +22,22 @@ func ListAlbums(env environment.FrontendEnvironment) http.Handler {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		for i, album := range albums {
+			album.Images, err = env.Repositories.AlbumImages.List(album.Id)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			for j, image := range album.Images {
+				err = image.LoadUrl(env.Storage, env.Configuration.Storage)
+				if err != nil {
+					http.Error(writer, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				album.Images[j] = image
+			}
+			albums[i] = album
+		}
 
 		util.ReturnJson(writer, albums)
 	})

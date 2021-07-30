@@ -3,4 +3,5 @@ export interface AlbumImage {
     image: string,
     title: string,
     description: string,
+    url: string,
 }
