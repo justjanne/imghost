@@ -60,6 +60,26 @@ func (storage Storage) DownloadFile(ctx context.Context, bucketName string, file
 	return
 }
 
+func (storage Storage) DeleteFiles(ctx context.Context, bucketName string, prefix string) error {
+	objects := storage.s3client.ListObjects(
+		ctx,
+		bucketName,
+		minio.ListObjectsOptions{Prefix: prefix},
+	)
+	errors := storage.s3client.RemoveObjects(
+		ctx,
+		bucketName,
+		objects,
+		minio.RemoveObjectsOptions{},
+	)
+	for err := range errors {
+		if err.Err != nil {
+			return err.Err
+		}
+	}
+	return nil
+}
+
 func (storage Storage) UrlFor(bucketName string, fileName string) *url.URL {
 	fileUrl := *storage.s3client.EndpointURL()
 	fileUrl.Path = filepath.Join(fileUrl.Path, bucketName, fileName)

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"database/sql"
 	"git.kuschku.de/justjanne/imghost-frontend/environment"
 	"github.com/gorilla/mux"
@@ -22,6 +23,16 @@ func DeleteImage(env environment.FrontendEnvironment) http.Handler {
 		}
 
 		err = env.Repositories.Images.Delete(image)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		err = env.Storage.DeleteFiles(
+			context.Background(),
+			env.Configuration.Storage.ImageBucket,
+			image.Id,
+		)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return

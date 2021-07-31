@@ -24,6 +24,9 @@ func NewBackendEnvironment(config configuration.BackendConfiguration) (env Backe
 	if env.Repositories.Images, err = repo.NewImageRepo(env.Database); err != nil {
 		return
 	}
+	if env.Repositories.ImageMetadata, err = repo.NewImageMetadataRepo(env.Database); err != nil {
+		return
+	}
 	if env.Repositories.Albums, err = repo.NewAlbumRepo(env.Database); err != nil {
 		return
 	}

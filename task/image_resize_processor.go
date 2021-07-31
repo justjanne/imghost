@@ -11,6 +11,7 @@ import (
 	"github.com/justjanne/imgconv"
 	"gopkg.in/gographics/imagick.v2/imagick"
 	"io/ioutil"
+	"strings"
 )
 
 type ImageProcessor struct {
@@ -26,6 +27,8 @@ func NewImageProcessor(env environment.BackendEnvironment) *ImageProcessor {
 func (processor *ImageProcessor) ProcessTask(ctx context.Context, task *asynq.Task) (err error) {
 	var payload ImageResizePayload
 	if err = json.Unmarshal(task.Payload(), &payload); err != nil {
+		println("Could not unmarshal task")
+		println(err.Error())
 		return
 	}
 
@@ -69,7 +72,22 @@ func (processor *ImageProcessor) ProcessTask(ctx context.Context, task *asynq.Ta
 		println("failed to load file: " + sourceFile.Name())
 		println(err.Error())
 		_ = processor.env.Repositories.Images.UpdateState(payload.ImageId, repo.StateError)
-		return err
+		return
+	}
+
+	metadata := make(map[string]string)
+	for _, key := range wand.GetImageProperties("exif:*") {
+		if strings.HasPrefix(key, "exif:thumbnail:") {
+			continue
+		}
+		metadata[strings.TrimPrefix(key, "exif:")] = wand.GetImageProperty(key)
+	}
+	err = processor.env.Repositories.ImageMetadata.Update(payload.ImageId, metadata)
+	if err != nil {
+		println("failed to write metadata: " + payload.ImageId)
+		println(err.Error())
+		_ = processor.env.Repositories.Images.UpdateState(payload.ImageId, repo.StateError)
+		return
 	}
 
 	err = util.LaunchGoroutines(len(payload.Sizes), func(index int) error {
@@ -101,6 +119,18 @@ func (processor *ImageProcessor) ProcessTask(ctx context.Context, task *asynq.Ta
 	})
 	if err != nil {
 		println("failed to convert image file")
+		println(err.Error())
+		_ = processor.env.Repositories.Images.UpdateState(payload.ImageId, repo.StateError)
+		return
+	}
+
+	err = processor.env.Storage.DeleteFiles(
+		ctx,
+		processor.env.Configuration.Storage.ConversionBucket,
+		payload.ImageId,
+	)
+	if err != nil {
+		println("failed to delete temp file: " + payload.ImageId)
 		println(err.Error())
 		_ = processor.env.Repositories.Images.UpdateState(payload.ImageId, repo.StateError)
 		return

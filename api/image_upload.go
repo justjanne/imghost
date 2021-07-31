@@ -33,16 +33,21 @@ func generateId() string {
 }
 
 func determineMimeType(header string, filename string) string {
+	println("Determining mime header from " + header + " and " + filename)
 	mediaType, _, err := mime.ParseMediaType(header)
 	if err == nil {
+		println("mediatype is " + mediaType)
 		return mediaType
 	}
 	mediaType = mime.TypeByExtension(filepath.Ext(filename))
+	println("extensiontype is " + mediaType)
 	return mediaType
 }
 
 func determineExtension(filename string, mimeType string) (extension string, err error) {
+	println("determining extension for " + filename + " and " + mimeType)
 	extension = filepath.Ext(filename)
+	println("found file extension " + extension)
 	if extension != "" {
 		return
 	}
@@ -56,6 +61,7 @@ func determineExtension(filename string, mimeType string) (extension string, err
 		return
 	}
 	extension = extensions[0]
+	println("found mime extension " + extension)
 	return
 }
 
@@ -81,7 +87,7 @@ func UploadImage(env environment.FrontendEnvironment) http.Handler {
 		}
 
 		var files []model.Image
-		for _, file := range request.MultipartForm.File["images[]"] {
+		for _, file := range request.MultipartForm.File["images"] {
 			println("processing file")
 			var image model.Image
 			image.Id = generateId()

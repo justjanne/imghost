@@ -31,6 +31,7 @@ func NewImageRepo(db *sqlx.DB) (repo Images, err error) {
 			       title,
 			       description,
 			       original_name,
+			       type,
 			       created_at,
 			       updated_at,
 			       state
@@ -47,6 +48,7 @@ func NewImageRepo(db *sqlx.DB) (repo Images, err error) {
 			       title,
 			       description,
 			       original_name,
+			       type,
 			       created_at,
 			       updated_at,
 			       state

@@ -15,7 +15,7 @@ type Image struct {
 	CreatedAt    time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
 	OriginalName string    `json:"original_name" db:"original_name"`
-	MimeType     string    `json:"mime_type" db:"mime_type"`
+	MimeType     string    `json:"mime_type" db:"type"`
 	State        string    `json:"state" db:"state"`
 	Url          string    `json:"url"`
 }

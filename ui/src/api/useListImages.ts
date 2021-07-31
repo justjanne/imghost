@@ -6,7 +6,7 @@ import {Image} from "./model/Image";
 export const useListImages = () => {
     const baseUrl = useBaseUrl();
     return useQuery(
-        "images",
+        "image",
         () => axios.get<Image[]>(
             "api/v1/images",
             {

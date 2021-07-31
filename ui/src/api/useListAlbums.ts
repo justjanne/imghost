@@ -6,7 +6,7 @@ import {Album} from "./model/Album";
 export const useListAlbums = () => {
     const baseUrl = useBaseUrl();
     return useQuery(
-        "albums",
+        "album",
         () => axios.get<Album[]>(
             "api/v1/albums",
             {
