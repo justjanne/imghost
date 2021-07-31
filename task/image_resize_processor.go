@@ -75,12 +75,43 @@ func (processor *ImageProcessor) ProcessTask(ctx context.Context, task *asynq.Ta
 		return
 	}
 
+	supportedMetadata := map[string]bool{
+		"Make":                  true,
+		"Model":                 true,
+		"DateTime":              true,
+		"DateTimeDigitized":     true,
+		"DateTimeOriginal":      true,
+		"DigitalZoomRatio":      true,
+		"ExposureBiasValue":     true,
+		"ExposureMode":          true,
+		"ExposureProgram":       true,
+		"ExposureTime":          true,
+		"FNumber":               true,
+		"Flash":                 true,
+		"FlashEnergy":           true,
+		"FocalLength":           true,
+		"FocalLengthIn35mmFilm": true,
+		"ISOSpeedRatings":       true,
+		"LightSource":           true,
+		"MeteringMode":          true,
+		"WhiteBalance":          true,
+		"Contrast":              true,
+		"Sharpness":             true,
+		"SubjectDistance":       true,
+		"SubjectDistanceRange":  true,
+		"Software":              true,
+		"Copyright":             true,
+	}
 	metadata := make(map[string]string)
 	for _, key := range wand.GetImageProperties("exif:*") {
 		if strings.HasPrefix(key, "exif:thumbnail:") {
 			continue
 		}
-		metadata[strings.TrimPrefix(key, "exif:")] = wand.GetImageProperty(key)
+		trimmedKey := strings.TrimPrefix(key, "exif:")
+		if !supportedMetadata[trimmedKey] {
+			continue
+		}
+		metadata[trimmedKey] = wand.GetImageProperty(key)
 	}
 	err = processor.env.Repositories.ImageMetadata.Update(payload.ImageId, metadata)
 	if err != nil {

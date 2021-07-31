@@ -8,5 +8,8 @@ export interface Image {
     original_name: string,
     mime_type: string,
     state: string,
+    metadata: {
+        [key: string]: string
+    },
     url: string,
 }

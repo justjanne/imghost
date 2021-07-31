@@ -20,6 +20,11 @@ func ListImages(env environment.FrontendEnvironment) http.Handler {
 				http.Error(writer, err.Error(), http.StatusInternalServerError)
 				return
 			}
+			image.Metadata, err = env.Repositories.ImageMetadata.List(image)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusInternalServerError)
+				return
+			}
 			images[idx] = image
 		}
 

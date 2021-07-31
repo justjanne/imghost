@@ -8,16 +8,17 @@ import (
 )
 
 type Image struct {
-	Id           string    `json:"id" db:"id"`
-	Owner        string    `json:"owner" db:"owner"`
-	Title        string    `json:"title" db:"title"`
-	Description  string    `json:"description" db:"description"`
-	CreatedAt    time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
-	OriginalName string    `json:"original_name" db:"original_name"`
-	MimeType     string    `json:"mime_type" db:"type"`
-	State        string    `json:"state" db:"state"`
-	Url          string    `json:"url"`
+	Id           string            `json:"id" db:"id"`
+	Owner        string            `json:"owner" db:"owner"`
+	Title        string            `json:"title" db:"title"`
+	Description  string            `json:"description" db:"description"`
+	CreatedAt    time.Time         `json:"created_at" db:"created_at"`
+	UpdatedAt    time.Time         `json:"updated_at" db:"updated_at"`
+	OriginalName string            `json:"original_name" db:"original_name"`
+	MimeType     string            `json:"mime_type" db:"type"`
+	State        string            `json:"state" db:"state"`
+	Metadata     map[string]string `json:"metadata,omitempty"`
+	Url          string            `json:"url"`
 }
 
 func (image Image) VerifyOwner(user User) error {
