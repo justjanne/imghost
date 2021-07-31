@@ -1,3 +1,5 @@
+import {parseNumber} from "./ImageMetadata";
+
 export enum ExposureProgram {
     MANUAL = 1,
     NORMAL = 2,
@@ -7,4 +9,15 @@ export enum ExposureProgram {
     ACTION = 6,
     PORTRAIT = 7,
     LANDSCAPE = 8,
+}
+
+export function parseExposureProgram(value: string | undefined): ExposureProgram | undefined {
+    const numericValue = parseNumber(value);
+    if (numericValue === undefined) {
+        return undefined;
+    }
+    if (Object.values(ExposureProgram).includes(numericValue)) {
+        return numericValue as ExposureProgram;
+    }
+    return undefined;
 }

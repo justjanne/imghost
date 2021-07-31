@@ -1,14 +1,14 @@
 import {parseRatio, Ratio} from "./Ratio";
-import {Flash} from "./Flash";
-import {ExposureMode} from "./ExposureMode";
-import {ExposureProgram} from "./ExposureProgram";
-import {LightSource} from "./LightSource";
-import {MeteringMode} from "./MeteringMode";
-import {WhiteBalance} from "./WhiteBalance";
-import {SceneMode} from "./SceneMode";
-import {ContrastProcessing} from "./ContrastProcessing";
-import {SharpnessProcessing} from "./SharpnessProcessing";
-import {SubjectDistanceRange} from "./SubjectDistanceRange";
+import {Flash, parseFlash} from "./Flash";
+import {ExposureMode, parseExposureMode} from "./ExposureMode";
+import {ExposureProgram, parseExposureProgram} from "./ExposureProgram";
+import {LightSource, parseLightSource} from "./LightSource";
+import {MeteringMode, parseMeteringMode} from "./MeteringMode";
+import {parseWhiteBalance, WhiteBalance} from "./WhiteBalance";
+import {parseSceneMode, SceneMode} from "./SceneMode";
+import {ContrastProcessing, parseContrastProcessing} from "./ContrastProcessing";
+import {parseSharpnessProcessing, SharpnessProcessing} from "./SharpnessProcessing";
+import {parseSubjectDistanceRange, SubjectDistanceRange} from "./SubjectDistanceRange";
 
 export interface ImageMetadata {
     make?: string,
@@ -22,7 +22,7 @@ export interface ImageMetadata {
     exposure?: Ratio,
     exposureMode?: ExposureMode,
     exposureProgram?: ExposureProgram,
-    exposureTime?: Ratio,
+    shutterSpeed?: Ratio,
     aperture?: Ratio,
     flash?: Flash,
     focalLength?: Ratio,
@@ -38,7 +38,7 @@ export interface ImageMetadata {
     subjectDistanceRange?: SubjectDistanceRange,
 }
 
-export function parseMetadata(metadata: { [key: string]: string }): ImageMetadata {
+export function parseMetadata(metadata: { [key: string]: string | undefined }): ImageMetadata {
     return {
         make: metadata["Make"],
         model: metadata["Model"],
@@ -51,9 +51,9 @@ export function parseMetadata(metadata: { [key: string]: string }): ImageMetadat
         exposure: parseRatio(metadata["ExposureBiasValue"]),
         exposureMode: parseExposureMode(metadata["ExposureMode"]),
         exposureProgram: parseExposureProgram(metadata["ExposureProgram"]),
-        exposureTime: parseRatio(metadata["ExposureTime"]),
+        shutterSpeed: parseRatio(metadata["ExposureTime"]),
         aperture: parseRatio(metadata["FNumber"]),
-        flash: undefined,
+        flash: parseFlash(metadata["Flash"], metadata["FlashEnergy"]),
         focalLength: parseRatio(metadata["FocalLength"]),
         focalLength35mm: parseRatio(metadata["FocalLengthIn35mmFilm"]),
         isoSpeedRating: parseNumber(metadata["ISOSpeedRatings"]),
@@ -68,7 +68,10 @@ export function parseMetadata(metadata: { [key: string]: string }): ImageMetadat
     }
 }
 
-export function parseDate(value: string): Date | undefined {
+export function parseDate(value: string | undefined): Date | undefined {
+    if (value === undefined) {
+        return undefined;
+    }
     const split = value.split(" ");
     if (split.length !== 2) {
         return undefined;
@@ -85,111 +88,15 @@ export function parseDate(value: string): Date | undefined {
     }
 }
 
-export function parseNumber(value: string): number | undefined {
+export function parseNumber(value: string | undefined): number | undefined {
+    if (value === undefined) {
+        return undefined;
+    }
     const number = parseInt(value);
     if (isNaN(number) || number === Infinity || number === -Infinity) {
         return undefined;
     }
     return number;
-}
-
-export function parseExposureMode(value: string): ExposureMode | undefined {
-    const numericValue = parseNumber(value)
-    if (numericValue === undefined) {
-        return undefined;
-    }
-    if (numericValue in Object.values(ExposureMode)) {
-        return numericValue as ExposureMode;
-    }
-    return undefined;
-}
-
-export function parseExposureProgram(value: string): ExposureProgram | undefined {
-    const numericValue = parseNumber(value);
-    if (numericValue === undefined) {
-        return undefined;
-    }
-    if (numericValue in Object.values(ExposureProgram)) {
-        return numericValue as ExposureProgram;
-    }
-    return undefined;
-}
-
-export function parseLightSource(value: string): LightSource | undefined {
-    const numericValue = parseNumber(value);
-    if (numericValue === undefined) {
-        return undefined;
-    }
-    if (numericValue in Object.values(LightSource)) {
-        return numericValue as LightSource;
-    }
-    return undefined;
-}
-
-export function parseMeteringMode(value: string): MeteringMode | undefined {
-    const numericValue = parseNumber(value);
-    if (numericValue === undefined) {
-        return undefined;
-    }
-    if (numericValue in Object.values(MeteringMode)) {
-        return numericValue as MeteringMode;
-    }
-    return undefined;
-}
-
-export function parseWhiteBalance(value: string): WhiteBalance | undefined {
-    const numericValue = parseNumber(value);
-    if (numericValue === undefined) {
-        return undefined;
-    }
-    if (numericValue in Object.values(WhiteBalance)) {
-        return numericValue as WhiteBalance;
-    }
-    return undefined;
-}
-
-export function parseSceneMode(value: string): SceneMode | undefined {
-    const numericValue = parseNumber(value);
-    if (numericValue === undefined) {
-        return undefined;
-    }
-    if (numericValue in Object.values(SceneMode)) {
-        return numericValue as SceneMode;
-    }
-    return undefined;
-}
-
-export function parseContrastProcessing(value: string): ContrastProcessing | undefined {
-    const numericValue = parseNumber(value);
-    if (numericValue === undefined) {
-        return undefined;
-    }
-    if (numericValue in Object.values(ContrastProcessing)) {
-        return numericValue as ContrastProcessing;
-    }
-    return undefined;
-}
-
-export function parseSharpnessProcessing(value: string): SharpnessProcessing | undefined {
-    const numericValue = parseNumber(value);
-    if (numericValue === undefined) {
-        return undefined;
-    }
-    if (numericValue in Object.values(SharpnessProcessing)) {
-        return numericValue as SharpnessProcessing;
-    }
-    return undefined;
-}
-
-export function parseSubjectDistanceRange(value: string): SubjectDistanceRange | undefined {
-    const numericValue = parseNumber(value);
-    if (numericValue === undefined) {
-        return undefined;
-    }
-    if (numericValue in Object.values(SubjectDistanceRange)) {
-        return numericValue as SubjectDistanceRange;
-    }
-    return undefined;
 }
 
 export function ratioToTime(value: Ratio | undefined): string | undefined {

@@ -1,5 +1,5 @@
 import {Image} from "../api/model/Image";
-import React, {useMemo, useState} from "react";
+import React, {Fragment, useMemo, useState} from "react";
 import {useUpdateImage} from "../api/useUpdateImage";
 import {useDeleteImage} from "../api/useDeleteImage";
 import {parseMetadata, ratioToTime} from "../metadata/ImageMetadata";
@@ -13,6 +13,9 @@ import {SceneMode} from "../metadata/SceneMode";
 import {ContrastProcessing} from "../metadata/ContrastProcessing";
 import {SharpnessProcessing} from "../metadata/SharpnessProcessing";
 import {SubjectDistanceRange} from "../metadata/SubjectDistanceRange";
+import {BrightnessMedium, Camera, Copyright, Event, Exposure, PhotoCamera, ZoomIn} from "@material-ui/icons";
+import {AngleAcute, ArrowExpandHorizontal, Blur, CameraTimer, Flash, WhiteBalanceIncandescent} from "mdi-material-ui";
+import {FlashMode} from "../metadata/FlashMode";
 
 export interface ImageProps {
     image: Image
@@ -61,39 +64,92 @@ export default function ImageView({image}: ImageProps) {
             <p>{image.updated_at}</p>
             <p>{image.state}</p>
             <h3>Metadata</h3>
-            <p><b>Make</b>: {metadata.make}</p>
-            <p><b>Model</b>: {metadata.model}</p>
-            <p><b>Software</b>: {metadata.software}</p>
-            <p><b>Copyright</b>: {metadata.copyright}</p>
-            <p><b>DateTime Created</b>: {metadata.dateTimeCreated?.toISOString()}</p>
-            <p><b>DateTime Digitized</b>: {metadata.dateTimeDigitized?.toISOString()}</p>
-            <p><b>DateTime Original</b>: {metadata.dateTimeOriginal?.toISOString()}</p>
-            <p><b>Digital Zoom</b>: {ratioToFloat(metadata.digitalZoomRatio)}</p>
-            <p><b>Exposure</b>: {ratioToFloat(metadata.exposure)}</p>
-            <p><b>Exposure Mode</b>: {metadata.exposureMode !== undefined ?
-                ExposureMode[metadata.exposureMode] : "null"}</p>
-            <p><b>Exposure Program</b>: {metadata.exposureProgram !== undefined ?
-                ExposureProgram[metadata.exposureProgram] : "null"}</p>
-            <p><b>Exposure Time</b>: {ratioToTime(metadata.exposureTime)}</p>
-            <p><b>Aperture</b>: {ratioToFloat(metadata.aperture)}</p>
-            <p><b>Focal Length</b>: {ratioToFloat(metadata.focalLength)}</p>
-            <p><b>Focal Length (35mm equivalent)</b>: {ratioToFloat(metadata.focalLength35mm)}</p>
-            <p><b>ISO</b>: {metadata.isoSpeedRating}</p>
-            <p><b>Light source</b>: {metadata.lightSource !== undefined ?
-                LightSource[metadata.lightSource] : "null"}</p>
-            <p><b>Metering mode</b>: {metadata.meteringMode !== undefined ?
-                MeteringMode[metadata.meteringMode] : "null"}</p>
-            <p><b>White balance</b>: {metadata.whiteBalance !== undefined ?
-                WhiteBalance[metadata.whiteBalance] : "null"}</p>
-            <p><b>Scene Mode</b>: {metadata.sceneMode !== undefined ?
-                SceneMode[metadata.sceneMode] : "null"}</p>
-            <p><b>Contrast Processing</b>: {metadata.contrast !== undefined ?
-                ContrastProcessing[metadata.contrast] : "null"}</p>
-            <p><b>Sharpness Processing</b>: {metadata.sharpness !== undefined ?
-                SharpnessProcessing[metadata.sharpness] : "null"}</p>
-            <p><b>Subject Distance</b>: {metadata.subjectDistance}</p>
-            <p><b>Subject Distance Range</b>: {metadata.subjectDistanceRange !== undefined ?
-                SubjectDistanceRange[metadata.subjectDistanceRange] : "null"}</p>
+            {metadata.make !== undefined && (
+                <p><b>Make</b>: {metadata.make}</p>
+            )}
+            {metadata.model !== undefined && (
+                <p><PhotoCamera/><b>Model</b>: {metadata.model}</p>
+            )}
+            {metadata.software !== undefined && (
+                <p><b>Software</b>: {metadata.software}</p>
+            )}
+            {metadata.copyright !== undefined && (
+                <p><Copyright/><b>Copyright</b>: {metadata.copyright}</p>
+            )}
+            {metadata.dateTimeCreated !== undefined && (
+                <p><Event/><b>DateTime Created</b>: {metadata.dateTimeCreated?.toISOString()}</p>
+            )}
+            {metadata.dateTimeDigitized !== undefined && (
+                <p><Event/><b>DateTime Digitized</b>: {metadata.dateTimeDigitized?.toISOString()}</p>
+            )}
+            {metadata.dateTimeOriginal !== undefined && (
+                <p><Event/><b>DateTime Original</b>: {metadata.dateTimeOriginal?.toISOString()}</p>
+            )}
+            {metadata.digitalZoomRatio !== undefined && (
+                <p><ZoomIn/><b>Digital Zoom</b>: {ratioToFloat(metadata.digitalZoomRatio)}</p>
+            )}
+            {metadata.exposure !== undefined && (
+                <p><Exposure/><b>Exposure</b>: {ratioToFloat(metadata.exposure)}</p>
+            )}
+            {metadata.exposureMode !== undefined && (
+                <p><Exposure/><b>Exposure Mode</b>: {ExposureMode[metadata.exposureMode]}</p>
+            )}
+            {metadata.exposureProgram !== undefined && (
+                <p><Exposure/><b>Exposure Program</b>: {ExposureProgram[metadata.exposureProgram]}</p>
+            )}
+            {metadata.shutterSpeed !== undefined && (
+                <p><CameraTimer/><b>Shutter Speed</b>: {ratioToTime(metadata.shutterSpeed)}</p>
+            )}
+            {metadata.aperture !== undefined && (
+                <p><Camera/><b>Aperture</b>: {ratioToFloat(metadata.aperture)}</p>
+            )}
+            {metadata.focalLength !== undefined && (
+                <p><AngleAcute/><b>Focal Length</b>: {ratioToFloat(metadata.focalLength)}mm</p>
+            )}
+            {metadata.focalLength35mm !== undefined && (
+                <p><AngleAcute/><b>Focal Length (35mm equivalent)</b>: {ratioToFloat(metadata.focalLength35mm)}mm</p>
+            )}
+            {metadata.isoSpeedRating !== undefined && (
+                <p><b>ISO</b>: {metadata.isoSpeedRating}</p>
+            )}
+            {metadata.flash !== undefined && (
+                <Fragment>
+                    <p><Flash/><b>Flash</b></p>
+                    <p><b>Available</b>: {metadata.flash.available ? "Yes" : "No"}</p>
+                    <p><b>Fired</b>: {metadata.flash.fired ? "Yes" : "No"}</p>
+                    <p><b>Red Eye Reduction</b>: {metadata.flash.redEyeReduction ? "Yes" : "No"}</p>
+                    <p><b>Strobe Detection Available</b>: {metadata.flash.strobeDetection.available ? "Yes" : "No"}</p>
+                    <p><b>Strobe Detection Used</b>: {metadata.flash.strobeDetection.detected ? "Yes" : "No"}</p>
+                    {metadata.flash.mode !== undefined && (
+                        <p><b>Flash Mode</b>: {FlashMode[metadata.flash.mode]}</p>
+                    )}
+                </Fragment>
+            )}
+            {metadata.lightSource !== undefined && (
+                <p><WhiteBalanceIncandescent/><b>Light source</b>: {LightSource[metadata.lightSource]}</p>
+            )}
+            {metadata.meteringMode !== undefined && (
+                <p><b>Metering mode</b>: {MeteringMode[metadata.meteringMode]}</p>
+            )}
+            {metadata.whiteBalance !== undefined && (
+                <p><WhiteBalanceIncandescent/><b>White balance</b>: {WhiteBalance[metadata.whiteBalance]}</p>
+            )}
+            {metadata.sceneMode !== undefined && (
+                <p><b>Scene Mode</b>: {SceneMode[metadata.sceneMode]}</p>
+            )}
+            {metadata.contrast !== undefined && (
+                <p><BrightnessMedium/><b>Contrast Processing</b>: {ContrastProcessing[metadata.contrast]}</p>
+            )}
+            {metadata.sharpness !== undefined && (
+                <p><Blur/><b>Sharpness Processing</b>: {SharpnessProcessing[metadata.sharpness]}</p>
+            )}
+            {metadata.subjectDistance !== undefined && (
+                <p><ArrowExpandHorizontal/><b>Subject Distance</b>: {metadata.subjectDistance}</p>
+            )}
+            {metadata.subjectDistanceRange !== undefined && (
+                <p><ArrowExpandHorizontal/><b>Subject Distance
+                    Range</b>: {SubjectDistanceRange[metadata.subjectDistanceRange]}</p>
+            )}
             <img src={image.url + "t"} alt=""/>
             <br/>
             <input

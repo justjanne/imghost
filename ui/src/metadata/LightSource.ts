@@ -1,3 +1,5 @@
+import {parseNumber} from "./ImageMetadata";
+
 export enum LightSource {
     DAYLIGHT = 1,
     FLUORESCENT = 2,
@@ -18,4 +20,15 @@ export enum LightSource {
     D75 = 22,
     D50 = 23,
     ISO_STUDIO_INCANDESCENT = 24,
+}
+
+export function parseLightSource(value: string | undefined): LightSource | undefined {
+    const numericValue = parseNumber(value);
+    if (numericValue === undefined) {
+        return undefined;
+    }
+    if (Object.values(LightSource).includes(numericValue)) {
+        return numericValue as LightSource;
+    }
+    return undefined;
 }

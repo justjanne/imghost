@@ -3,7 +3,10 @@ export interface Ratio {
     denominator: number
 }
 
-export function parseRatio(value: string): Ratio | undefined {
+export function parseRatio(value: string | undefined): Ratio | undefined {
+    if (value === undefined) {
+        return undefined;
+    }
     const splitValues = value.split("/");
     if (splitValues.length < 1) {
         return undefined;
