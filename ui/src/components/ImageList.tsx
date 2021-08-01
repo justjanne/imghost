@@ -9,14 +9,12 @@ export default function ImageList() {
         <div>
             <p>{status}</p>
             <p>{error as string}</p>
-            <ul>
-                {data?.map(image => (
-                    <ImageView
-                        key={image.id}
-                        image={image}
-                    />
-                ))}
-            </ul>
+            {data?.map(image => (
+                <ImageView
+                    key={image.id}
+                    image={image}
+                />
+            ))}
         </div>
     );
 }
