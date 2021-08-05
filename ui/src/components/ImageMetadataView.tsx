@@ -1,5 +1,5 @@
 import {Fragment} from "react";
-import {ImageMetadata, ratioToTime} from "../metadata/ImageMetadata";
+import {ImageMetadata, ratioToDistance, ratioToTime} from "../metadata/ImageMetadata";
 import {ratioToFloat} from "../metadata/Ratio";
 import {ExposureMode} from "../metadata/ExposureMode";
 import {ExposureProgram} from "../metadata/ExposureProgram";
@@ -166,7 +166,7 @@ export default function ImageMetadataView({metadata}: ImageMetadataViewProps) {
             {metadata.subjectDistance !== undefined && (
                 <ListItem dense>
                     <ListItemIcon><ArrowExpandHorizontal/></ListItemIcon>
-                    <ListItemText primary="Subject Distance" secondary={metadata.subjectDistance}/>
+                    <ListItemText primary="Subject Distance" secondary={ratioToDistance(metadata.subjectDistance)}/>
                 </ListItem>
             )}
             {metadata.subjectDistanceRange !== undefined && (

@@ -1,4 +1,4 @@
-import {parseRatio, Ratio} from "./Ratio";
+import {parseRatio, Ratio, ratioToFloat} from "./Ratio";
 import {Flash, parseFlash} from "./Flash";
 import {ExposureMode, parseExposureMode} from "./ExposureMode";
 import {ExposureProgram, parseExposureProgram} from "./ExposureProgram";
@@ -11,6 +11,7 @@ import {parseSharpnessProcessing, SharpnessProcessing} from "./SharpnessProcessi
 import {parseSubjectDistanceRange, SubjectDistanceRange} from "./SubjectDistanceRange";
 
 export interface ImageMetadata {
+    aspectRatio?: Ratio,
     make?: string,
     model?: string,
     software?: string,
@@ -34,12 +35,16 @@ export interface ImageMetadata {
     sceneMode?: SceneMode,
     contrast?: ContrastProcessing,
     sharpness?: SharpnessProcessing,
-    subjectDistance?: number,
+    subjectDistance?: Ratio,
     subjectDistanceRange?: SubjectDistanceRange,
 }
 
-export function parseMetadata(metadata: { [key: string]: string | undefined }): ImageMetadata {
+export function parseMetadata(metadata?: { [key: string]: string | undefined }): ImageMetadata | undefined {
+    if (metadata === undefined) {
+        return undefined;
+    }
     return {
+        aspectRatio: parseRatio(metadata["AspectRatio"]),
         make: metadata["Make"],
         model: metadata["Model"],
         software: metadata["Software"],
@@ -63,7 +68,7 @@ export function parseMetadata(metadata: { [key: string]: string | undefined }): 
         sceneMode: parseSceneMode(metadata["SceneMode"]),
         contrast: parseContrastProcessing(metadata["Contrast"]),
         sharpness: parseSharpnessProcessing(metadata["Sharpness"]),
-        subjectDistance: parseNumber(metadata["SubjectDistance"]),
+        subjectDistance: parseSubjectDistance(metadata["SubjectDistance"]),
         subjectDistanceRange: parseSubjectDistanceRange(metadata["SubjectDistanceRange"]),
     }
 }
@@ -106,6 +111,42 @@ export function ratioToTime(value: Ratio | undefined): string | undefined {
     if (value.numerator > value.denominator) {
         return (value.numerator / value.denominator).toFixed(0) + "s";
     } else {
-        return "1/" + (value.denominator / value.numerator) + "s";
+        return "1/" + (value.denominator / value.numerator).toFixed(0) + "s";
     }
+}
+
+export function ratioToDistance(value: Ratio | undefined): string | undefined {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value.numerator === Infinity) {
+        return "∞";
+    }
+    const numeric = value.numerator / value.denominator;
+    const magnitude = Math.floor(Math.log10(numeric));
+    switch (magnitude) {
+        case 0:
+        case -1:
+        case -2:
+            return `${(numeric * 100).toFixed(0)} cm`;
+        case -3:
+            return `${(numeric * 1000).toFixed(0)} mm`;
+        default:
+            if (magnitude >= 0) return `${numeric.toFixed(0)} m`;
+            else return `${numeric} m`;
+    }
+}
+
+export function parseSubjectDistance(value: string | undefined): Ratio | undefined {
+    const numericValue = parseRatio(value);
+    if (numericValue === undefined) {
+        return undefined;
+    }
+    if (ratioToFloat(numericValue) === 4294967295) {
+        return {
+            numerator: Infinity,
+            denominator: 1,
+        };
+    }
+    return numericValue;
 }
