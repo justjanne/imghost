@@ -113,6 +113,11 @@ func (processor *ImageProcessor) ProcessTask(ctx context.Context, task *asynq.Ta
 		}
 		metadata[trimmedKey] = wand.GetImageProperty(key)
 	}
+	metadata["AspectRatio"] = fmt.Sprintf(
+		"%d/%d",
+		wand.GetImageWidth(),
+		wand.GetImageHeight(),
+	)
 	err = processor.env.Repositories.ImageMetadata.Update(payload.ImageId, metadata)
 	if err != nil {
 		println("failed to write metadata: " + payload.ImageId)
