@@ -1,4 +1,3 @@
-import React from 'react';
 import '../App.css';
 import {useListAlbums} from "../api/useListAlbums";
 import AlbumView from "./AlbumView";

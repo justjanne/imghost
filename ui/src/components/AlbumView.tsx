@@ -1,5 +1,4 @@
 import AlbumImageView from "./AlbumImageView";
-import React from "react";
 import {Album} from "../api/model/Album";
 
 export interface AlbumProps {

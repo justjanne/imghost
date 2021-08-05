@@ -1,4 +1,3 @@
-import React from "react";
 import {useUploadImage} from "../api/useUploadImage";
 
 export default function UploadView() {

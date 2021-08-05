@@ -1,4 +1,3 @@
-import React from "react";
 import {AlbumImage} from "../api/model/AlbumImage";
 
 export interface AlbumImageProps {

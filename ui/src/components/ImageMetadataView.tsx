@@ -1,4 +1,4 @@
-import React, {Fragment} from "react";
+import {Fragment} from "react";
 import {ImageMetadata, ratioToTime} from "../metadata/ImageMetadata";
 import {ratioToFloat} from "../metadata/Ratio";
 import {ExposureMode} from "../metadata/ExposureMode";
