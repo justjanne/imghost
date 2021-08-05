@@ -1,14 +1,22 @@
 import {useUploadImage} from "../api/useUploadImage";
+import {ErrorPortal} from "./ErrorContext";
+import {ErrorAlert} from "./ErrorAlert";
+import {LinearProgress} from "@material-ui/core";
 
 export default function UploadView() {
-    const {mutate: upload, error: uploadError, isLoading: uploadLoading} = useUploadImage();
+    const {mutate: upload, error, isLoading} = useUploadImage();
 
     return (
         <div>
-            <pre>Error: {JSON.stringify(uploadError, null, 2)}</pre>
-            <pre>Loading: {JSON.stringify(uploadLoading, null, 2)}</pre>
+            {isLoading && (
+                <LinearProgress/>
+            )}
+            <ErrorPortal>
+                <ErrorAlert severity="error" error={error}/>
+            </ErrorPortal>
             <input
                 type="file"
+                disabled={isLoading}
                 onChange={async ({target}) => {
                     if (target.files) {
                         await upload(target.files)
