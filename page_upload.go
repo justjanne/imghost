@@ -113,7 +113,7 @@ func pageUpload(ctx PageContext) http.Handler {
 				return
 			}
 
-			pubsub := ctx.Redis.Subscribe(ctx.Config.ResultChannel)
+			pubsub := ctx.Redis.Subscribe(ctx.Context, ctx.Config.ResultChannel)
 			_, err = ctx.Database.Exec("INSERT INTO images (id, owner, created_at, updated_at, original_name, type) VALUES ($1, $2, $3, $4, $5, $6)", image.Id, user.Id, image.CreatedAt, image.CreatedAt, image.OriginalName, image.MimeType)
 			if err != nil {
 				panic(err)
@@ -131,12 +131,12 @@ func pageUpload(ctx PageContext) http.Handler {
 			}
 
 			fmt.Printf("Created task %s at %d\n", image.Id, time.Now().Unix())
-			ctx.Redis.RPush(fmt.Sprintf("queue:%s", ctx.Config.ImageQueue), data)
+			ctx.Redis.RPush(ctx.Context, fmt.Sprintf("queue:%s", ctx.Config.ImageQueue), data)
 			fmt.Printf("Submitted task %s at %d\n", image.Id, time.Now().Unix())
 
 			waiting := true
 			for waiting {
-				message, err := pubsub.ReceiveMessage()
+				message, err := pubsub.ReceiveMessage(ctx.Context)
 				if err != nil {
 					if err = returnJson(w, []Result{{
 						Success: false,

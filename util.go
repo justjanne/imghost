@@ -1,14 +1,15 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-	"html/template"
-	"time"
+	"context"
 	"database/sql"
-	"github.com/go-redis/redis"
-	"strings"
 	"encoding/json"
+	"fmt"
+	"github.com/go-redis/redis/v8"
+	"html/template"
+	"net/http"
+	"strings"
+	"time"
 )
 
 type UserInfo struct {
@@ -28,6 +29,7 @@ func (info UserInfo) HasRole(role string) bool {
 }
 
 type PageContext struct {
+	Context     context.Context
 	Config      *Config
 	Redis       *redis.Client
 	Database    *sql.DB

@@ -1,8 +1,9 @@
 package main
 
 import (
+	"context"
 	"database/sql"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 	_ "github.com/lib/pq"
 	"net/http"
 )
@@ -16,6 +17,7 @@ func main() {
 	}
 
 	pageContext := PageContext{
+		context.Background(),
 		&config,
 		redis.NewClient(&redis.Options{
 			Addr:     config.Redis.Address,
