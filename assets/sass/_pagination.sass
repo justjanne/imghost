@@ -5,11 +5,10 @@ ul.pagination
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2)
   padding: 4px 8px
   color: #fff
-  justify-content: space-between
+  justify-self: center
   grid-column-start: 1
   grid-column-end: -1
   max-width: 480px
-  justify-self: center
   width: calc(100% - 16px)
 
   li.page
@@ -22,3 +21,5 @@ ul.pagination
     &.current
       display: block
       padding: 4px 16px
+      flex-grow: 1
+      text-align: center
