@@ -26,14 +26,17 @@
     <ul class="pagination">
         <li class="page">
             {{- if lt 0 .Previous -}}
-                <a class="button" href="/me/images/{{- .Previous -}}">Previous page</a>
+                <a class="button" href="/me/images/1">First</a>
+                <a class="button" href="/me/images/{{- .Previous -}}">Previous</a>
             {{- else -}}
-                <a class="button" aria-disabled="true">Previous page</a>
+                <a class="button" aria-disabled="true">First</a>
+                <a class="button" aria-disabled="true">Previous</a>
             {{- end -}}
         </li>
         <li class="page current">Page {{ .Current }}</li>
         <li class="page">
-            <a class="button" href="/me/images/{{- .Next -}}">Next page</a>
+            <a class="button" href="/me/images/{{- .Next -}}">Next</a>
+            <a class="button" aria-disabled="true">Last</a>
         </li>
     </ul>
 </div>

@@ -58,14 +58,16 @@ element.addEventListener("change", () => {
             });
             image_container.classList.remove("uploading");
             if (response.ok) {
-                image_link.href = "/" + json.id + ".png";
-                image.src = "/" + json.id + ".png";
+                const data = await response.json();
+                image_link.href = "/" + data.id + ".png";
+                image.src = "/" + data.id + ".png";
             } else {
+                const data = await response.json();
                 const image_error = document.createElement("div");
                 image_error.classList.add("alert", "error");
-                image_error.innerText = JSON.stringify(json.errors);
+                image_error.innerText = JSON.stringify(data.errors);
                 image_container.insertBefore(image_error, image_description);
-                console.log(json);
+                console.log(data);
             }
         });
         reader.readAsDataURL(file);
