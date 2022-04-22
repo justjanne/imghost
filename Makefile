@@ -12,3 +12,7 @@ push: build
 	docker push $(IMAGE):$(TAGS)
 	docker push $(IMAGE):latest
 	@echo Successfully pushed $(IMAGE):$(TAGS) as latest
+
+.PHONY: tags
+tags:
+	@echo "$(TAGS)"
