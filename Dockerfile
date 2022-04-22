@@ -3,14 +3,25 @@ FROM golang:alpine as go_builder
 RUN apk add --no-cache musl-dev
 
 WORKDIR /go/src/app
-COPY *.go go.* ./
+COPY go.* ./
 RUN go mod download
+COPY *.go ./
 RUN CGO_ENABLED=false go build -o app .
 
 FROM node:alpine as asset_builder
+RUN apk --no-cache add \
+    --virtual .build-deps \
+    	alpine-sdk \
+    	cmake \
+    	libssh2 libssh2-dev \
+    	git \
+    	dep \
+    	bash \
+    	curl \
+    python3
 WORKDIR /app
 COPY package* /app/
-RUN npm install
+RUN npm ci
 COPY assets /app/assets
 RUN npm run build
 
