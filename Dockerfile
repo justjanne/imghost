@@ -14,7 +14,7 @@ RUN npm install
 COPY assets /app/assets
 RUN npm run build
 
-FROM alpine:3.10
+FROM alpine:3.15
 WORKDIR /
 COPY --from=go_builder /go/src/app/app /app
 COPY templates /templates
