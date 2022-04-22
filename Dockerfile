@@ -32,6 +32,6 @@ RUN addgroup -g 1000 -S app && \
     adduser -u 1000 -G app -S app
 COPY --from=go_builder /go/src/app/app /
 COPY templates /templates
-COPY --from=asset_builder /app/assets /
+COPY --from=asset_builder /app/assets /assets
 USER app
 ENTRYPOINT ["/app"]
