@@ -27,7 +27,11 @@ RUN npm run build
 
 FROM alpine:3.15
 WORKDIR /
-COPY --from=go_builder /go/src/app/app /app
+RUN apk --no-cache add imagemagick
+RUN addgroup -g 1000 -S app && \
+    adduser -u 1000 -G app -S app
+COPY --from=go_builder /go/src/app/app /
 COPY templates /templates
-COPY --from=asset_builder /app/assets /assets
+COPY --from=asset_builder /app/assets /
+USER app
 ENTRYPOINT ["/app"]
