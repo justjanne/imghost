@@ -13,11 +13,6 @@ import (
 	"time"
 )
 
-type UploadData struct {
-	User    UserInfo
-	Results []Result
-}
-
 func detectMimeType(path string) (string, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -84,49 +79,30 @@ func pageUpload(ctx PageContext) http.Handler {
 
 			err := r.ParseMultipartForm(32 << 20)
 			if err != nil {
-				if err = returnJson(w, []Result{{
-					Success: false,
-					Errors:  []string{err.Error()},
-				}}); err != nil {
-					panic(err)
-				}
+				formatError(w, ErrorData{500, user, r.URL, err}, "json")
+				return
 			}
 
 			file, header, err := r.FormFile("file")
 			if err != nil {
-				if err = returnJson(w, []Result{{
-					Success: false,
-					Errors:  []string{err.Error()},
-				}}); err != nil {
-					panic(err)
-				}
+				formatError(w, ErrorData{500, user, r.URL, err}, "json")
 				return
 			}
 			image, err := createImage(ctx.Config, file, header)
 			if err != nil {
-				if err = returnJson(w, []Result{{
-					Success: false,
-					Errors:  []string{err.Error()},
-				}}); err != nil {
-					panic(err)
-				}
+				formatError(w, ErrorData{500, user, r.URL, err}, "json")
 				return
 			}
 
 			pubsub := ctx.Redis.Subscribe(ctx.Context, ctx.Config.ResultChannel)
-			_, err = ctx.Database.Exec("INSERT INTO images (id, owner, created_at, updated_at, original_name, type) VALUES ($1, $2, $3, $4, $5, $6)", image.Id, user.Id, image.CreatedAt, image.CreatedAt, image.OriginalName, image.MimeType)
-			if err != nil {
-				panic(err)
+			if _, err = ctx.Database.Exec("INSERT INTO images (id, owner, created_at, updated_at, original_name, type) VALUES ($1, $2, $3, $4, $5, $6)", image.Id, user.Id, image.CreatedAt, image.CreatedAt, image.OriginalName, image.MimeType); err != nil {
+				formatError(w, ErrorData{500, user, r.URL, err}, "json")
+				return
 			}
 
 			data, err := json.Marshal(image)
 			if err != nil {
-				if err = returnJson(w, []Result{{
-					Success: false,
-					Errors:  []string{err.Error()},
-				}}); err != nil {
-					panic(err)
-				}
+				formatError(w, ErrorData{500, user, r.URL, err}, "json")
 				return
 			}
 
@@ -138,24 +114,14 @@ func pageUpload(ctx PageContext) http.Handler {
 			for waiting {
 				message, err := pubsub.ReceiveMessage(ctx.Context)
 				if err != nil {
-					if err = returnJson(w, []Result{{
-						Success: false,
-						Errors:  []string{err.Error()},
-					}}); err != nil {
-						panic(err)
-					}
+					formatError(w, ErrorData{500, user, r.URL, err}, "json")
 					return
 				}
 
 				result := Result{}
 				err = json.Unmarshal([]byte(message.Payload), &result)
 				if err != nil {
-					if err = returnJson(w, []Result{{
-						Success: false,
-						Errors:  []string{err.Error()},
-					}}); err != nil {
-						panic(err)
-					}
+					formatError(w, ErrorData{500, user, r.URL, err}, "json")
 					return
 				}
 
@@ -165,18 +131,19 @@ func pageUpload(ctx PageContext) http.Handler {
 					waiting = false
 
 					if err = returnJson(w, result); err != nil {
-						panic(err)
+						formatError(w, ErrorData{500, user, r.URL, err}, "json")
+						return
 					}
 				}
 			}
 			return
 		} else {
 			user := parseUser(r)
-			if err := formatTemplate(w, "upload.html", UploadData{
+			if err := formatTemplate(w, "upload.html", IndexData{
 				user,
-				[]Result{},
 			}); err != nil {
-				panic(err)
+				formatError(w, ErrorData{500, user, r.URL, err}, "html")
+				return
 			}
 		}
 	})

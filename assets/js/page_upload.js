@@ -1,24 +1,11 @@
-function postData(url, data) {
-    return fetch(url, {
-        body: data,
-        cache: 'no-cache',
-        credentials: 'same-origin',
-        method: 'POST',
-        mode: 'cors',
-        redirect: 'follow'
-    }).then(response => response.json())
-}
-
 const page = document.querySelector(".page.upload");
-const form = document.querySelector("form.upload");
 const element = document.querySelector("form.upload input[type=file]");
 const results = document.querySelector(".uploading-images .images");
-const sidebar = document.querySelector(".uploading-images .sidebar");
 element.addEventListener("change", () => {
     page.classList.add("submitted");
     for (let file of element.files) {
         const reader = new FileReader();
-        reader.addEventListener("load", (e) => {
+        reader.addEventListener("load", async (e) => {
             const dataUrl = e.target.result;
 
             const image_container = document.createElement("div");
@@ -61,20 +48,25 @@ element.addEventListener("change", () => {
             const data = new FormData();
             data.append("file", file, file.name);
 
-            postData("/upload/", data).then((json) => {
-                image_container.classList.remove("uploading");
-                if (json.success) {
-                    image_link.href = "/" + json.id + ".png";
-                    image.src = "/" + json.id + ".png";
-                } else {
-                    const image_error = document.createElement("div");
-                    image_error.classList.add("alert", "error");
-                    image_error.innerText = JSON.stringify(json.errors);
-                    image_container.insertBefore(image_error, image_description);
-                }
-
-                console.log(json);
+            const response = await fetch("/upload/", {
+                body: data,
+                cache: 'no-cache',
+                credentials: 'same-origin',
+                method: 'POST',
+                mode: 'cors',
+                redirect: 'follow'
             });
+            image_container.classList.remove("uploading");
+            if (response.ok) {
+                image_link.href = "/" + json.id + ".png";
+                image.src = "/" + json.id + ".png";
+            } else {
+                const image_error = document.createElement("div");
+                image_error.classList.add("alert", "error");
+                image_error.innerText = JSON.stringify(json.errors);
+                image_container.insertBefore(image_error, image_description);
+                console.log(json);
+            }
         });
         reader.readAsDataURL(file);
     }

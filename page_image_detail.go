@@ -32,8 +32,7 @@ func pageImageDetail(ctx PageContext) http.Handler {
 			WHERE id = $1
 			`, imageId)
 		if err != nil {
-			fmt.Printf("An error occured: %s", err.Error())
-			_ = returnError(w, http.StatusInternalServerError, "Internal Server Error")
+			formatError(w, ErrorData{500, user, r.URL, err}, "html")
 			return
 		}
 
@@ -41,45 +40,40 @@ func pageImageDetail(ctx PageContext) http.Handler {
 
 		if result.Next() {
 			var owner string
-			err := result.Scan(&info.Id, &owner, &info.Title, &info.Description, &info.CreatedAt, &info.OriginalName, &info.MimeType)
-			if err != nil {
-				fmt.Printf("An error occured: %s", err.Error())
-				_ = returnError(w, http.StatusInternalServerError, "Internal Server Error")
+			if err := result.Scan(&info.Id, &owner, &info.Title, &info.Description, &info.CreatedAt, &info.OriginalName, &info.MimeType); err != nil {
+				formatError(w, ErrorData{500, user, r.URL, err}, "html")
 				return
 			}
 
 			switch r.PostFormValue("action") {
 			case "update":
-				_, err = ctx.Database.Exec(
+				if _, err := ctx.Database.Exec(
 					"UPDATE images SET title = $1, description = $2 WHERE id = $3 AND owner = $4",
 					r.PostFormValue("title"),
 					r.PostFormValue("description"),
 					info.Id,
 					user.Id,
-				)
-				if err != nil {
-					fmt.Printf("An error occured: %s", err.Error())
-					_ = returnError(w, http.StatusInternalServerError, "Internal Server Error")
+				); err != nil {
+					formatError(w, ErrorData{500, user, r.URL, err}, "html")
 					return
 				}
 				if r.PostFormValue("from_js") == "true" {
-					_ = returnJson(w, true)
+					if err := returnJson(w, true); err != nil {
+						formatError(w, ErrorData{500, user, r.URL, err}, "html")
+						return
+					}
 				} else {
 					http.Redirect(w, r, r.URL.Path, http.StatusFound)
 				}
 				return
 			case "delete":
-				_, err = ctx.Database.Exec("DELETE FROM images WHERE id = $1 AND owner = $2", info.Id, user.Id)
-				if err != nil {
-					fmt.Printf("An error occured: %s", err.Error())
-					_ = returnError(w, http.StatusInternalServerError, "Internal Server Error")
+				if _, err := ctx.Database.Exec("DELETE FROM images WHERE id = $1 AND owner = $2", info.Id, user.Id); err != nil {
+					formatError(w, ErrorData{500, user, r.URL, err}, "html")
 					return
 				}
 				for _, definition := range ctx.Config.Sizes {
-					err := os.Remove(path.Join(ctx.Config.TargetFolder, fmt.Sprintf("%s%s", info.Id, definition.Suffix)))
-					if err != nil && !os.IsNotExist(err) {
-						fmt.Printf("An error occured: %s", err.Error())
-						_ = returnError(w, http.StatusInternalServerError, "Internal Server Error")
+					if err := os.Remove(path.Join(ctx.Config.TargetFolder, fmt.Sprintf("%s%s", info.Id, definition.Suffix))); err != nil {
+						formatError(w, ErrorData{500, user, r.URL, err}, "html")
 						return
 					}
 				}
@@ -92,11 +86,15 @@ func pageImageDetail(ctx PageContext) http.Handler {
 				info,
 				owner == user.Id,
 			}); err != nil {
-				panic(err)
+				formatError(w, ErrorData{500, user, r.URL, err}, "html")
+				return
 			}
 			return
 		}
 
-		_ = returnError(w, http.StatusNotFound, "Image Not Found")
+		if err := returnError(w, http.StatusNotFound, "Image Not Found"); err != nil {
+			formatError(w, ErrorData{500, user, r.URL, err}, "html")
+			return
+		}
 	})
 }

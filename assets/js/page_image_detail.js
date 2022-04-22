@@ -1,14 +1,3 @@
-function postData(url, data) {
-    return fetch(url, {
-        body: data,
-        cache: 'no-cache',
-        credentials: 'same-origin',
-        method: 'POST',
-        mode: 'cors',
-        redirect: 'follow'
-    }).then(response => response.json())
-}
-
 const fakeTitle = document.querySelector(".title.fake-input[contenteditable]");
 const fakeDescription = document.querySelector(".description.fake-input[contenteditable]");
 
@@ -22,16 +11,24 @@ let lastTimeOut = null;
 let hasChanged = false;
 let isSaving = false;
 
-const doSave = () => {
-    const data = new FormData(document.forms.namedItem("upload"));
-    data.append("from_js", "true");
-    save.value = "Saving…";
-    hasChanged = false;
-    isSaving = true;
-    postData(location.href, data).then((json) => {
-        save.value = "Saved";
-        isSaving = false;
-    })
+const doSave = async () => {
+  const data = new FormData(document.forms.namedItem("upload"));
+  data.append("from_js", "true");
+  save.value = "Saving…";
+  hasChanged = false;
+  isSaving = true;
+  const response = await fetch(location.href, {
+    body: data,
+    cache: 'no-cache',
+    credentials: 'same-origin',
+    method: 'POST',
+    mode: 'cors',
+    redirect: 'follow'
+  });
+  if (response.ok) {
+    save.value = "Saved";
+    isSaving = false;
+  }
 };
 
 const scheduleSave = () => {

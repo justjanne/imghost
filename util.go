@@ -8,7 +8,6 @@ import (
 	"github.com/go-redis/redis/v8"
 	"html/template"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -53,11 +52,19 @@ type Album struct {
 }
 
 func parseUser(r *http.Request) UserInfo {
+	/*
+		return UserInfo{
+			r.Header.Get("X-Auth-Subject"),
+			r.Header.Get("X-Auth-Username"),
+			r.Header.Get("X-Auth-Email"),
+			strings.Split(r.Header.Get("X-Auth-Roles"), ","),
+		}
+	*/
 	return UserInfo{
-		r.Header.Get("X-Auth-Subject"),
-		r.Header.Get("X-Auth-Username"),
-		r.Header.Get("X-Auth-Email"),
-		strings.Split(r.Header.Get("X-Auth-Roles"), ","),
+		"ad45284c-be4d-4546-8171-41cf126ac091",
+		"justJanne",
+		"janne@kuschku.de",
+		[]string{"imghost:user", "imghost:admin"},
 	}
 }
 

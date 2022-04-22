@@ -1,0 +1,18 @@
+{{- /*gotype: git.kuschku.de/justjanne/imghost-frontend.ErrorData*/ -}}
+{{define "title"}}Error | ik8r{{end}}
+{{define "content"}}
+  <div class="page">
+    <div class="container centered">
+      <p>
+        <b>{{.Code}}.</b>
+        <ins>That’s an error.</ins>
+      </p>
+      <p>
+        An error occured while trying to access <code>{{.URL}}</code>.<br>
+        <ins>Sorry about that.</ins>
+
+        <code>{{.Error}}</code>
+      </p>
+    </div>
+  </div>
+{{end}}

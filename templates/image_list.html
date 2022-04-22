@@ -1,12 +1,20 @@
+{{- /*gotype: git.kuschku.de/justjanne/imghost-frontend.ImageListData*/ -}}
 {{define "title"}}My Images | ik8r{{end}}
 {{define "content"}}
 <div class="page image list">
 {{range .Images}}
     <a class="image" href="/i/{{.Id}}">
         <div class="image-container">
-            <img src="/{{.Id}}t.png">
+            <img src="https://i.k8r.eu/{{.Id}}t.png">
         </div>
         <div class="info">
+            <p class="title">
+                {{- if eq .Title "" -}}
+                    <span class="placeholder">Unnamed</span>
+                {{- else -}}
+                    {{.Title}}
+                {{- end -}}
+            </p>
             <p>{{.OriginalName}}</p>
             <p>
                 <time>{{.CreatedAt.Format "2006-01-02 15:04"}}</time>
@@ -15,5 +23,18 @@
         </div>
     </a>
 {{end}}
+    <ul class="pagination">
+        <li class="page">
+            {{- if lt 0 .Previous -}}
+                <a class="button" href="/me/images/{{- .Previous -}}">Previous page</a>
+            {{- else -}}
+                <a class="button" aria-disabled="true">Previous page</a>
+            {{- end -}}
+        </li>
+        <li class="page current">Page {{ .Current }}</li>
+        <li class="page">
+            <a class="button" href="/me/images/{{- .Next -}}">Next page</a>
+        </li>
+    </ul>
 </div>
 {{end}}
