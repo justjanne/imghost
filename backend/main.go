@@ -53,14 +53,15 @@ func main() {
 		Handler: metricsMux,
 	}
 
-	go func() {
+	runner := shared.Runner{}
+	runner.RunParallel(func() {
 		if err := metrics.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Printf("error in metrics server: %s", err.Error())
 		}
 		log.Printf("metrics shut down, shutting down asynq as well")
 		srv.Shutdown()
-	}()
-	go func() {
+	})
+	runner.RunParallel(func() {
 		if err := srv.Run(mux); err != nil {
 			log.Printf("error in asynq server: %s", err.Error())
 		}
@@ -68,5 +69,6 @@ func main() {
 		if err := metrics.Shutdown(context.Background()); err != nil {
 			log.Printf("error shutting down metrics server: %s", err.Error())
 		}
-	}()
+	})
+	runner.Wait()
 }
