@@ -17,6 +17,7 @@ type SizeDefinition struct {
 type RedisConfig struct {
 	Address  string `yaml:"address"`
 	Password string `yaml:"password"`
+	Database int    `yaml:"database"`
 }
 
 type DatabaseConfig struct {
@@ -55,5 +56,6 @@ func (config Config) AsynqOpts() asynq.RedisClientOpt {
 	return asynq.RedisClientOpt{
 		Addr:     config.Redis.Address,
 		Password: config.Redis.Password,
+		DB:       config.Redis.Database,
 	}
 }
