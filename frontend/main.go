@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
-	"git.kuschku.de/justjanne/imghost-frontend/shared"
+	"git.kuschku.de/justjanne/imghost/shared"
 	"github.com/hibiken/asynq"
 	_ "github.com/lib/pq"
 	"log"

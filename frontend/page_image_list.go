@@ -2,7 +2,7 @@ package main
 
 import (
 	"database/sql"
-	"git.kuschku.de/justjanne/imghost-frontend/shared"
+	"git.kuschku.de/justjanne/imghost/shared"
 	"net/http"
 	"path"
 	"strconv"

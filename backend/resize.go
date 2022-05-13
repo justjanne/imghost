@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"git.kuschku.de/justjanne/imghost-frontend/shared"
+	"git.kuschku.de/justjanne/imghost/shared"
 	"github.com/justjanne/imgconv"
 	"gopkg.in/gographics/imagick.v3/imagick"
 	"path/filepath"

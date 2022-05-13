@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"git.kuschku.de/justjanne/imghost-frontend/shared"
+	"git.kuschku.de/justjanne/imghost/shared"
 	"github.com/hibiken/asynq"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"

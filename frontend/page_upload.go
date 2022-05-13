@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"git.kuschku.de/justjanne/imghost-frontend/shared"
+	"git.kuschku.de/justjanne/imghost/shared"
 	"io"
 	"mime/multipart"
 	"net/http"

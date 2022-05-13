@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"git.kuschku.de/justjanne/imghost-frontend/shared"
+	"git.kuschku.de/justjanne/imghost/shared"
 	_ "github.com/lib/pq"
 	"net/http"
 	"os"
