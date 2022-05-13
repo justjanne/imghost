@@ -57,13 +57,16 @@ func main() {
 		if err := metrics.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Printf("error in metrics server: %s", err.Error())
 		}
+		log.Printf("metrics shut down, shutting down asynq as well")
 		srv.Shutdown()
 	}()
-
-	if err := srv.Run(mux); err != nil {
-		log.Printf("error in asynq server: %s", err.Error())
-	}
-	if err := metrics.Shutdown(context.Background()); err != nil {
-		log.Printf("error shutting down metrics server: %s", err.Error())
-	}
+	go func() {
+		if err := srv.Run(mux); err != nil {
+			log.Printf("error in asynq server: %s", err.Error())
+		}
+		log.Printf("asynq shut down, shutting down metrics as well")
+		if err := metrics.Shutdown(context.Background()); err != nil {
+			log.Printf("error shutting down metrics server: %s", err.Error())
+		}
+	}()
 }
