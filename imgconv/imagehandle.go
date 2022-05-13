@@ -171,27 +171,22 @@ func (image *ImageHandle) Resize(size Size) error {
 }
 
 func (image *ImageHandle) prepareWrite(quality Quality) error {
-	log.Printf("preparing image for writing at quality %v", quality)
 	for _, profile := range image.profiles {
-		log.Printf("setting color profile on image '%s' %d", profile.format, len(profile.data))
 		if err := image.wand.ProfileImage(profile.format, profile.data); err != nil {
 			return err
 		}
 	}
-	log.Printf("setting image depth on image %d", image.depth)
 	if err := image.wand.SetImageDepth(image.depth); err != nil {
 		return err
 	}
 
 	if quality.CompressionQuality != 0 {
-		log.Printf("setting compression quality on image %d", quality.CompressionQuality)
 		if err := image.wand.SetImageCompressionQuality(quality.CompressionQuality); err != nil {
 			return err
 		}
 	}
 
 	if len(quality.SamplingFactors) != 0 {
-		log.Printf("setting sampling factors on image %v", quality.SamplingFactors)
 		if err := image.wand.SetSamplingFactors(quality.SamplingFactors); err != nil {
 			return err
 		}
@@ -206,7 +201,6 @@ func (image *ImageHandle) Write(quality Quality, target string) error {
 	if err := image.prepareWrite(quality); err != nil {
 		return err
 	}
-	log.Printf("writing image %s", target)
 	if err := image.wand.WriteImage(target); err != nil {
 		return err
 	}
@@ -217,7 +211,6 @@ func (image *ImageHandle) WriteImageFile(quality Quality, target *os.File) error
 	if err := image.prepareWrite(quality); err != nil {
 		return err
 	}
-	log.Printf("writing image %s", target.Name())
 	if err := image.wand.WriteImageFile(target); err != nil {
 		return err
 	}

@@ -10,7 +10,7 @@ type Image struct {
 	Description  string
 	CreatedAt    time.Time
 	OriginalName string
-	MimeType     string `json:"mime_type"`
+	MimeType     string `json:"mimeType"`
 }
 
 type Result struct {

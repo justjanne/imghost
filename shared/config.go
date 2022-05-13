@@ -28,13 +28,13 @@ type DatabaseConfig struct {
 type Config struct {
 	Sizes         []SizeDefinition `yaml:"sizes"`
 	Quality       imgconv.Quality  `yaml:"quality"`
-	SourceFolder  string           `yaml:"source-folder"`
-	TargetFolder  string           `yaml:"target-folder"`
+	SourceFolder  string           `yaml:"sourceFolder"`
+	TargetFolder  string           `yaml:"targetFolder"`
 	Redis         RedisConfig      `yaml:"redis"`
 	Database      DatabaseConfig   `yaml:"database"`
 	Concurrency   int              `yaml:"concurrency"`
-	UploadTimeout string           `yaml:"upload-timeout"`
-	BaseUrl       string           `yaml:"base-url"`
+	UploadTimeout string           `yaml:"uploadTimeout"`
+	BaseUrl       string           `yaml:"baseUrl"`
 }
 
 func LoadConfigFromFile(file *os.File) Config {

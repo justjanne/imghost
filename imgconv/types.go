@@ -16,8 +16,8 @@ type Size struct {
 }
 
 type Quality struct {
-	CompressionQuality uint      `json:"compression_quality" yaml:"compression-quality"`
-	SamplingFactors    []float64 `json:"sampling_factors" yaml:"sampling-factors"`
+	CompressionQuality uint      `json:"compressionQuality" yaml:"compressionQuality"`
+	SamplingFactors    []float64 `json:"samplingFactors" yaml:"samplingFactors"`
 }
 
 type ColorProfile struct {
