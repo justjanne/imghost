@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"git.kuschku.de/justjanne/imghost-frontend/shared"
 	"net/http"
 	"path"
 	"strconv"
@@ -9,7 +10,7 @@ import (
 
 type ImageListData struct {
 	User     UserInfo
-	Images   []Image
+	Images   []shared.Image
 	Previous int64
 	Current  int64
 	Next     int64
@@ -71,9 +72,9 @@ func pageImageList(ctx PageContext) http.Handler {
 			return
 		}
 
-		var images []Image
+		var images []shared.Image
 		for result.Next() {
-			var info Image
+			var info shared.Image
 			if err := result.Scan(&info.Id, &info.Title, &info.Description, &info.CreatedAt, &info.OriginalName, &info.MimeType); err != nil {
 				formatError(w, ErrorData{500, user, r.URL, err}, "html")
 				return

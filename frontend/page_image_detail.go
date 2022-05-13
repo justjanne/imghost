@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"git.kuschku.de/justjanne/imghost-frontend/shared"
 	_ "github.com/lib/pq"
 	"net/http"
 	"os"
@@ -10,7 +11,7 @@ import (
 
 type ImageDetailData struct {
 	User   UserInfo
-	Image  Image
+	Image  shared.Image
 	IsMine bool
 }
 
@@ -36,7 +37,7 @@ func pageImageDetail(ctx PageContext) http.Handler {
 			return
 		}
 
-		var info Image
+		var info shared.Image
 
 		if result.Next() {
 			var owner string

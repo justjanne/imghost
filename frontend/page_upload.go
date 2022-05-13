@@ -50,21 +50,21 @@ func writeBody(reader io.ReadCloser, path string) error {
 	return out.Close()
 }
 
-func createImage(config *shared.Config, body io.ReadCloser, fileHeader *multipart.FileHeader) (Image, error) {
+func createImage(config *shared.Config, body io.ReadCloser, fileHeader *multipart.FileHeader) (shared.Image, error) {
 	id := generateId()
 	path := filepath.Join(config.SourceFolder, id)
 
 	err := writeBody(body, path)
 	if err != nil {
-		return Image{}, err
+		return shared.Image{}, err
 	}
 
 	mimeType, err := detectMimeType(path)
 	if err != nil {
-		return Image{}, err
+		return shared.Image{}, err
 	}
 
-	image := Image{
+	image := shared.Image{
 		Id:           id,
 		OriginalName: filepath.Base(fileHeader.Filename),
 		CreatedAt:    time.Now(),
@@ -116,7 +116,7 @@ func pageUpload(ctx PageContext) http.Handler {
 				formatError(w, ErrorData{500, user, r.URL, err}, "json")
 				return
 			}
-			var result Result
+			var result shared.Result
 			if err := json.Unmarshal(info.Result, &result); err != nil {
 				formatError(w, ErrorData{500, user, r.URL, err}, "json")
 				return
