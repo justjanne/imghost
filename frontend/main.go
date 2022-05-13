@@ -12,6 +12,8 @@ import (
 )
 
 func main() {
+	defer shared.ErrorHandler()
+
 	configFile, err := os.Open("config.yaml")
 	if err != nil {
 		log.Fatalf("error opening config file: %s", err.Error())
