@@ -5,9 +5,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/go-redis/redis/v8"
+	"git.kuschku.de/justjanne/imghost-frontend/shared"
+	"github.com/hibiken/asynq"
 	"html/template"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -28,12 +30,13 @@ func (info UserInfo) HasRole(role string) bool {
 }
 
 type PageContext struct {
-	Context     context.Context
-	Config      *Config
-	Redis       *redis.Client
-	Database    *sql.DB
-	Images      http.Handler
-	AssetServer http.Handler
+	Context       context.Context
+	Config        *shared.Config
+	Async         *asynq.Client
+	UploadTimeout time.Duration
+	Database      *sql.DB
+	Images        http.Handler
+	AssetServer   http.Handler
 }
 
 type AlbumImage struct {
@@ -52,19 +55,11 @@ type Album struct {
 }
 
 func parseUser(r *http.Request) UserInfo {
-	/*
-		return UserInfo{
-			r.Header.Get("X-Auth-Subject"),
-			r.Header.Get("X-Auth-Username"),
-			r.Header.Get("X-Auth-Email"),
-			strings.Split(r.Header.Get("X-Auth-Roles"), ","),
-		}
-	*/
 	return UserInfo{
-		"ad45284c-be4d-4546-8171-41cf126ac091",
-		"justJanne",
-		"janne@kuschku.de",
-		[]string{"imghost:user", "imghost:admin"},
+		r.Header.Get("X-Auth-Subject"),
+		r.Header.Get("X-Auth-Username"),
+		r.Header.Get("X-Auth-Email"),
+		strings.Split(r.Header.Get("X-Auth-Roles"), ","),
 	}
 }
 
@@ -109,4 +104,29 @@ func formatTemplate(w http.ResponseWriter, templateName string, data interface{}
 	}
 
 	return nil
+}
+
+func waitOnTask(info *asynq.TaskInfo, timeout time.Duration) error {
+	total := time.Duration(0)
+	for total < timeout && info.State != asynq.TaskStateCompleted {
+		for info.State == asynq.TaskStateScheduled {
+			duration := info.NextProcessAt.Sub(time.Now())
+			total += duration
+			if total < timeout {
+				time.Sleep(duration)
+			}
+		}
+		if info.State != asynq.TaskStateCompleted {
+			duration := time.Duration(1 * time.Second)
+			total += duration
+			if total < timeout {
+				time.Sleep(duration)
+			}
+		}
+	}
+	if info.State == asynq.TaskStateCompleted {
+		return nil
+	} else {
+		return fmt.Errorf("timed out waiting on task: %s (%s)", info.Type, info.ID)
+	}
 }

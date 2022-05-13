@@ -6,7 +6,7 @@ WORKDIR /go/src/app
 COPY go.* ./
 RUN go mod download
 COPY *.go ./
-RUN CGO_ENABLED=false go build -o app .
+RUN CGO_ENABLED=false go build -o app frontend
 
 FROM node:alpine as asset_builder
 RUN apk --no-cache add \
@@ -20,9 +20,9 @@ RUN apk --no-cache add \
     	curl \
     python3
 WORKDIR /app
-COPY package* /app/
+COPY frontend/package* /app/
 RUN npm ci
-COPY assets /app/assets
+COPY frontend/assets /app/assets
 RUN npm run build
 
 FROM alpine:3.15
@@ -31,7 +31,7 @@ RUN apk --no-cache add imagemagick
 RUN addgroup -g 1000 -S app && \
     adduser -u 1000 -G app -S app
 COPY --from=go_builder /go/src/app/app /
-COPY templates /templates
+COPY frontend/templates /templates
 COPY --from=asset_builder /app/assets /assets
 USER app
 ENTRYPOINT ["/app"]

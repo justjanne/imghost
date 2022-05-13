@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"git.kuschku.de/justjanne/imghost-frontend/shared"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -49,7 +50,7 @@ func writeBody(reader io.ReadCloser, path string) error {
 	return out.Close()
 }
 
-func createImage(config *Config, body io.ReadCloser, fileHeader *multipart.FileHeader) (Image, error) {
+func createImage(config *shared.Config, body io.ReadCloser, fileHeader *multipart.FileHeader) (Image, error) {
 	id := generateId()
 	path := filepath.Join(config.SourceFolder, id)
 
@@ -94,47 +95,35 @@ func pageUpload(ctx PageContext) http.Handler {
 				return
 			}
 
-			pubsub := ctx.Redis.Subscribe(ctx.Context, ctx.Config.ResultChannel)
 			if _, err = ctx.Database.Exec("INSERT INTO images (id, owner, created_at, updated_at, original_name, type) VALUES ($1, $2, $3, $4, $5, $6)", image.Id, user.Id, image.CreatedAt, image.CreatedAt, image.OriginalName, image.MimeType); err != nil {
 				formatError(w, ErrorData{500, user, r.URL, err}, "json")
 				return
 			}
 
-			data, err := json.Marshal(image)
+			fmt.Printf("Created task %s at %d\n", image.Id, time.Now().Unix())
+			t, err := shared.NewImageResizeTask(image.Id)
+			fmt.Printf("Submitted task %s at %d\n", image.Id, time.Now().Unix())
 			if err != nil {
 				formatError(w, ErrorData{500, user, r.URL, err}, "json")
 				return
 			}
-
-			fmt.Printf("Created task %s at %d\n", image.Id, time.Now().Unix())
-			ctx.Redis.RPush(ctx.Context, fmt.Sprintf("queue:%s", ctx.Config.ImageQueue), data)
-			fmt.Printf("Submitted task %s at %d\n", image.Id, time.Now().Unix())
-
-			waiting := true
-			for waiting {
-				message, err := pubsub.ReceiveMessage(ctx.Context)
-				if err != nil {
-					formatError(w, ErrorData{500, user, r.URL, err}, "json")
-					return
-				}
-
-				result := Result{}
-				err = json.Unmarshal([]byte(message.Payload), &result)
-				if err != nil {
-					formatError(w, ErrorData{500, user, r.URL, err}, "json")
-					return
-				}
-
-				fmt.Printf("Returned task %s at %d\n", result.Id, time.Now().Unix())
-
-				if result.Id == image.Id {
-					waiting = false
-
-					if err = returnJson(w, result); err != nil {
-						formatError(w, ErrorData{500, user, r.URL, err}, "json")
-						return
-					}
-				}
+			info, err := ctx.Async.Enqueue(t)
+			if err != nil {
+				formatError(w, ErrorData{500, user, r.URL, err}, "json")
+				return
+			}
+			if err := waitOnTask(info, ctx.UploadTimeout); err != nil {
+				formatError(w, ErrorData{500, user, r.URL, err}, "json")
+				return
+			}
+			var result Result
+			if err := json.Unmarshal(info.Result, &result); err != nil {
+				formatError(w, ErrorData{500, user, r.URL, err}, "json")
+				return
+			}
+			if err = returnJson(w, result); err != nil {
+				formatError(w, ErrorData{500, user, r.URL, err}, "json")
+				return
 			}
 			return
 		} else {

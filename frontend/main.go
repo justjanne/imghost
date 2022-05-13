@@ -3,13 +3,20 @@ package main
 import (
 	"context"
 	"database/sql"
-	"github.com/go-redis/redis/v8"
+	"git.kuschku.de/justjanne/imghost-frontend/shared"
+	"github.com/hibiken/asynq"
 	_ "github.com/lib/pq"
+	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
-	config := NewConfigFromEnv()
+	configFile, err := os.Open("config.yaml")
+	if err != nil {
+		log.Fatalf("Could not open config file: %s", err.Error())
+	}
+	config := shared.LoadConfigFromFile(configFile)
 
 	db, err := sql.Open(config.Database.Format, config.Database.Url)
 	if err != nil {
@@ -19,10 +26,8 @@ func main() {
 	pageContext := PageContext{
 		context.Background(),
 		&config,
-		redis.NewClient(&redis.Options{
-			Addr:     config.Redis.Address,
-			Password: config.Redis.Password,
-		}),
+		asynq.NewClient(config.AsynqOpts()),
+		config.UploadTimeoutDuration(),
 		db,
 		http.FileServer(http.Dir(config.TargetFolder)),
 		http.FileServer(http.Dir("assets")),
