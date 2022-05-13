@@ -19,8 +19,8 @@ type errorDto struct {
 }
 
 func formatError(w http.ResponseWriter, data ErrorData, format string) {
-	if data.Code != 0 {
-		data.Code = 500
+	if data.Code == 0 {
+		data.Code = http.StatusInternalServerError
 	}
 	log.Printf(
 		"A type %d error occured for user %s while accessing %s: %s",
@@ -32,7 +32,7 @@ func formatError(w http.ResponseWriter, data ErrorData, format string) {
 	w.WriteHeader(data.Code)
 	if format == "html" {
 		if err := formatTemplate(w, "error.html", data); err != nil {
-			log.Printf("Error while serving html error for %s", data.URL.Path)
+			log.Printf("error serving html error for %s", data.URL.Path)
 			return
 		}
 	} else if format == "json" {
@@ -40,7 +40,7 @@ func formatError(w http.ResponseWriter, data ErrorData, format string) {
 			data.URL.Path,
 			data.Error.Error(),
 		}); err != nil {
-			log.Printf("Error while serving json error for %s", data.URL.Path)
+			log.Printf("error serving json error for %s", data.URL.Path)
 			return
 		}
 	}

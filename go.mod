@@ -1,4 +1,4 @@
-module git.kuschku.de/justjanne/imghost-frontend
+module git.kuschku.de/justjanne/imghost
 
 go 1.15
 

@@ -68,7 +68,7 @@ func pageImageList(ctx PageContext) http.Handler {
 			PageSize,
 		)
 		if err != nil {
-			formatError(w, ErrorData{500, user, r.URL, err}, "html")
+			formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")
 			return
 		}
 
@@ -76,7 +76,7 @@ func pageImageList(ctx PageContext) http.Handler {
 		for result.Next() {
 			var info shared.Image
 			if err := result.Scan(&info.Id, &info.Title, &info.Description, &info.CreatedAt, &info.OriginalName, &info.MimeType); err != nil {
-				formatError(w, ErrorData{500, user, r.URL, err}, "html")
+				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")
 				return
 			}
 			images = append(images, info)
@@ -89,7 +89,7 @@ func pageImageList(ctx PageContext) http.Handler {
 			pageNumber,
 			pageNumber + 1,
 		}); err != nil {
-			formatError(w, ErrorData{500, user, r.URL, err}, "html")
+			formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")
 			return
 		}
 	})

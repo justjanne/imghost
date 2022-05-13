@@ -33,7 +33,7 @@ func pageImageDetail(ctx PageContext) http.Handler {
 			WHERE id = $1
 			`, imageId)
 		if err != nil {
-			formatError(w, ErrorData{500, user, r.URL, err}, "html")
+			formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")
 			return
 		}
 
@@ -42,7 +42,7 @@ func pageImageDetail(ctx PageContext) http.Handler {
 		if result.Next() {
 			var owner string
 			if err := result.Scan(&info.Id, &owner, &info.Title, &info.Description, &info.CreatedAt, &info.OriginalName, &info.MimeType); err != nil {
-				formatError(w, ErrorData{500, user, r.URL, err}, "html")
+				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")
 				return
 			}
 
@@ -55,12 +55,12 @@ func pageImageDetail(ctx PageContext) http.Handler {
 					info.Id,
 					user.Id,
 				); err != nil {
-					formatError(w, ErrorData{500, user, r.URL, err}, "html")
+					formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")
 					return
 				}
 				if r.PostFormValue("from_js") == "true" {
 					if err := returnJson(w, true); err != nil {
-						formatError(w, ErrorData{500, user, r.URL, err}, "html")
+						formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")
 						return
 					}
 				} else {
@@ -69,12 +69,12 @@ func pageImageDetail(ctx PageContext) http.Handler {
 				return
 			case "delete":
 				if _, err := ctx.Database.Exec("DELETE FROM images WHERE id = $1 AND owner = $2", info.Id, user.Id); err != nil {
-					formatError(w, ErrorData{500, user, r.URL, err}, "html")
+					formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")
 					return
 				}
 				for _, definition := range ctx.Config.Sizes {
 					if err := os.Remove(path.Join(ctx.Config.TargetFolder, fmt.Sprintf("%s%s", info.Id, definition.Suffix))); err != nil {
-						formatError(w, ErrorData{500, user, r.URL, err}, "html")
+						formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")
 						return
 					}
 				}
@@ -87,14 +87,14 @@ func pageImageDetail(ctx PageContext) http.Handler {
 				info,
 				owner == user.Id,
 			}); err != nil {
-				formatError(w, ErrorData{500, user, r.URL, err}, "html")
+				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")
 				return
 			}
 			return
 		}
 
 		if err := returnError(w, http.StatusNotFound, "Image Not Found"); err != nil {
-			formatError(w, ErrorData{500, user, r.URL, err}, "html")
+			formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")
 			return
 		}
 	})

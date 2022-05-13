@@ -14,13 +14,13 @@ import (
 func main() {
 	configFile, err := os.Open("config.yaml")
 	if err != nil {
-		log.Fatalf("Could not open config file: %s", err.Error())
+		log.Fatalf("error opening config file: %s", err.Error())
 	}
 	config := shared.LoadConfigFromFile(configFile)
 
 	db, err := sql.Open(config.Database.Format, config.Database.Url)
 	if err != nil {
-		panic(err)
+		log.Fatalf("error connecting to database: %s", err.Error())
 	}
 
 	pageContext := PageContext{
@@ -46,8 +46,7 @@ func main() {
 		w.Write([]byte("OK"))
 	})
 
-	err = http.ListenAndServe(":8080", nil)
-	if err != nil {
-		panic(err)
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Fatalf("error in http server: %s", err.Error())
 	}
 }

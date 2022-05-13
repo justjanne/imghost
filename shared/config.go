@@ -39,7 +39,7 @@ type Config struct {
 func LoadConfigFromFile(file *os.File) Config {
 	var config Config
 	if err := yaml.NewDecoder(file).Decode(&config); err != nil {
-		log.Fatalf("Could not load config, %s", err.Error())
+		log.Fatalf("error loading config, %s", err.Error())
 	}
 	return config
 }
@@ -47,7 +47,7 @@ func LoadConfigFromFile(file *os.File) Config {
 func (config Config) UploadTimeoutDuration() time.Duration {
 	duration, err := time.ParseDuration(config.UploadTimeout)
 	if err != nil {
-		log.Fatalf("Could not load config: Could not parse upload timeout, %s", err.Error())
+		log.Fatalf("error loading config: error parsing upload timeout, %s", err.Error())
 	}
 	return duration
 }

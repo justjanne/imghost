@@ -80,23 +80,23 @@ func pageUpload(ctx PageContext) http.Handler {
 
 			err := r.ParseMultipartForm(32 << 20)
 			if err != nil {
-				formatError(w, ErrorData{500, user, r.URL, err}, "json")
+				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "json")
 				return
 			}
 
 			file, header, err := r.FormFile("file")
 			if err != nil {
-				formatError(w, ErrorData{500, user, r.URL, err}, "json")
+				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "json")
 				return
 			}
 			image, err := createImage(ctx.Config, file, header)
 			if err != nil {
-				formatError(w, ErrorData{500, user, r.URL, err}, "json")
+				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "json")
 				return
 			}
 
 			if _, err = ctx.Database.Exec("INSERT INTO images (id, owner, created_at, updated_at, original_name, type) VALUES ($1, $2, $3, $4, $5, $6)", image.Id, user.Id, image.CreatedAt, image.CreatedAt, image.OriginalName, image.MimeType); err != nil {
-				formatError(w, ErrorData{500, user, r.URL, err}, "json")
+				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "json")
 				return
 			}
 
@@ -104,25 +104,25 @@ func pageUpload(ctx PageContext) http.Handler {
 			t, err := shared.NewImageResizeTask(image.Id)
 			fmt.Printf("Submitted task %s at %d\n", image.Id, time.Now().Unix())
 			if err != nil {
-				formatError(w, ErrorData{500, user, r.URL, err}, "json")
+				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "json")
 				return
 			}
 			info, err := ctx.Async.Enqueue(t)
 			if err != nil {
-				formatError(w, ErrorData{500, user, r.URL, err}, "json")
+				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "json")
 				return
 			}
 			if err := waitOnTask(info, ctx.UploadTimeout); err != nil {
-				formatError(w, ErrorData{500, user, r.URL, err}, "json")
+				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "json")
 				return
 			}
 			var result shared.Result
 			if err := json.Unmarshal(info.Result, &result); err != nil {
-				formatError(w, ErrorData{500, user, r.URL, err}, "json")
+				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "json")
 				return
 			}
 			if err = returnJson(w, result); err != nil {
-				formatError(w, ErrorData{500, user, r.URL, err}, "json")
+				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "json")
 				return
 			}
 			return
@@ -131,7 +131,7 @@ func pageUpload(ctx PageContext) http.Handler {
 			if err := formatTemplate(w, "upload.html", IndexData{
 				user,
 			}); err != nil {
-				formatError(w, ErrorData{500, user, r.URL, err}, "html")
+				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")
 				return
 			}
 		}

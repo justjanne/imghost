@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"path"
 )
@@ -28,7 +27,8 @@ func pageAlbumDetail(ctx PageContext) http.Handler {
 			WHERE id = $1
 			`, albumId)
 		if err != nil {
-			panic(err)
+			formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")
+			return
 		}
 
 		var info Album
@@ -36,7 +36,8 @@ func pageAlbumDetail(ctx PageContext) http.Handler {
 			var owner string
 			err := result.Scan(&info.Id, &owner, &info.Title, &info.Description, &info.CreatedAt)
 			if err != nil {
-				panic(err)
+				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")
+				return
 			}
 
 			result, err := ctx.Database.Query(`
@@ -50,14 +51,16 @@ func pageAlbumDetail(ctx PageContext) http.Handler {
 			ORDER BY position ASC
 			`, albumId)
 			if err != nil {
-				panic(err)
+				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")
+				return
 			}
 
 			for result.Next() {
 				var image AlbumImage
 				err := result.Scan(&image.Id, &owner, &image.Title, &image.Description, &image.Position)
 				if err != nil {
-					panic(err)
+					formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")
+					return
 				}
 
 				info.Images = append(info.Images, image)
@@ -68,13 +71,16 @@ func pageAlbumDetail(ctx PageContext) http.Handler {
 				info,
 				owner == user.Id,
 			}); err != nil {
-				panic(err)
+				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")
+				return
 			}
 
 			return
 		}
 
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprint(w, "Album not found")
+		if err := returnError(w, http.StatusNotFound, "Image Not Found"); err != nil {
+			formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")
+			return
+		}
 	})
 }

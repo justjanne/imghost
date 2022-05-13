@@ -7,12 +7,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"golang.org/x/sys/unix"
 	"gopkg.in/gographics/imagick.v3/imagick"
 	"log"
 	"net/http"
 	"os"
-	"os/signal"
 )
 
 var imageProcessDuration = promauto.NewCounterVec(prometheus.CounterOpts{
@@ -28,7 +26,7 @@ var imageProcessDurationWrite = imageProcessDuration.WithLabelValues("write")
 func main() {
 	configFile, err := os.Open("config.yaml")
 	if err != nil {
-		log.Fatalf("Could not open config file: %s", err.Error())
+		log.Fatalf("error opening config file: %s", err.Error())
 	}
 	config := shared.LoadConfigFromFile(configFile)
 
@@ -53,25 +51,17 @@ func main() {
 		Handler: metricsMux,
 	}
 
-	done := make(chan struct{})
 	go func() {
 		if err := metrics.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Printf("Error: metrics server error: %s", err.Error())
+			log.Printf("error in metrics server: %s", err.Error())
 		}
-		close(done)
+		srv.Shutdown()
 	}()
 
 	if err := srv.Run(mux); err != nil {
-		log.Fatal(err)
+		log.Printf("error in asynq server: %s", err.Error())
 	}
-
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, unix.SIGTERM, unix.SIGINT)
-	<-sigs
-
-	srv.Shutdown()
 	if err := metrics.Shutdown(context.Background()); err != nil {
-		log.Printf("Error: metrics shutdown error: %s", err.Error())
+		log.Printf("error shutting down metrics server: %s", err.Error())
 	}
-	<-done
 }

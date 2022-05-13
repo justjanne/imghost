@@ -1,0 +1,28 @@
+ul.pagination {
+  display: flex;
+  flex-direction: row;
+  background: #333;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  padding: 4px 8px;
+  color: #fff;
+  justify-self: center;
+  grid-column-start: 1;
+  grid-column-end: -1;
+  max-width: 480px;
+  width: calc(100% - 16px);
+
+  li.page {
+    appearance: none;
+    list-style: none;
+    margin: 4px;
+    padding: 0;
+    line-height: 24px;
+
+    &.current {
+      display: block;
+      padding: 4px 16px;
+      flex-grow: 1;
+      text-align: center;
+    }
+  }
+}
