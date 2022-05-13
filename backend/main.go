@@ -7,7 +7,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"gopkg.in/gographics/imagick.v3/imagick"
+	"gopkg.in/gographics/imagick.v2/imagick"
 	"log"
 	"net/http"
 	"os"
@@ -55,6 +55,7 @@ func main() {
 
 	runner := shared.Runner{}
 	runner.RunParallel(func() {
+		log.Printf("starting metrics server")
 		if err := metrics.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Printf("error in metrics server: %s", err.Error())
 		}
@@ -62,6 +63,7 @@ func main() {
 		srv.Shutdown()
 	})
 	runner.RunParallel(func() {
+		log.Printf("starting asynq server")
 		if err := srv.Run(mux); err != nil {
 			log.Printf("error in asynq server: %s", err.Error())
 		}

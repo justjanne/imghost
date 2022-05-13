@@ -3,19 +3,19 @@
 {{define "content"}}
 <div class="page image list">
 {{range .Images}}
-    <a class="image" href="/i/{{.Id}}">
-        <div class="image-container">
-            <img src="https://i.k8r.eu/{{.Id}}t.png">
-        </div>
-        <div class="info">
-            <p class="title">
-                {{- if eq .Title "" -}}
-                    <span class="placeholder">Unnamed</span>
-                {{- else -}}
-                    {{.Title}}
-                {{- end -}}
-            </p>
-            <p>{{.OriginalName}}</p>
+  <a class="image" href="/i/{{.Id}}">
+    <div class="image-container">
+      <img src="/{{.Id}}t.png">
+    </div>
+    <div class="info">
+      <p class="title">
+          {{- if eq .Title "" -}}
+            <span class="placeholder">Unnamed</span>
+          {{- else -}}
+              {{.Title}}
+          {{- end -}}
+      </p>
+      <p>{{.OriginalName}}</p>
             <p>
                 <time>{{.CreatedAt.Format "2006-01-02 15:04"}}</time>
             </p>

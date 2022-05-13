@@ -1,8 +1,8 @@
 package shared
 
 import (
+	"git.kuschku.de/justjanne/imghost/imgconv"
 	"github.com/hibiken/asynq"
-	"github.com/justjanne/imgconv"
 	"gopkg.in/yaml.v2"
 	"log"
 	"os"
@@ -34,6 +34,7 @@ type Config struct {
 	Database      DatabaseConfig   `yaml:"database"`
 	Concurrency   int              `yaml:"concurrency"`
 	UploadTimeout string           `yaml:"upload-timeout"`
+	BaseUrl       string           `yaml:"base-url"`
 }
 
 func LoadConfigFromFile(file *os.File) Config {

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"git.kuschku.de/justjanne/imghost/shared"
+	"github.com/hibiken/asynq"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -13,6 +14,11 @@ import (
 	"path/filepath"
 	"time"
 )
+
+type UploadData struct {
+	BaseUrl string
+	User    UserInfo
+}
 
 func detectMimeType(path string) (string, error) {
 	file, err := os.Open(path)
@@ -100,19 +106,21 @@ func pageUpload(ctx PageContext) http.Handler {
 				return
 			}
 
-			fmt.Printf("Created task %s at %d\n", image.Id, time.Now().Unix())
+			fmt.Printf("created task %s at %d\n", image.Id, time.Now().Unix())
 			t, err := shared.NewImageResizeTask(image.Id)
-			fmt.Printf("Submitted task %s at %d\n", image.Id, time.Now().Unix())
 			if err != nil {
 				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "json")
 				return
 			}
-			info, err := ctx.Async.Enqueue(t)
+			info, err := ctx.AsynqClient.Enqueue(t, asynq.Retention(ctx.UploadTimeout))
+			fmt.Printf("submitted task %s at %d\n", image.Id, time.Now().Unix())
 			if err != nil {
 				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "json")
 				return
 			}
-			if err := waitOnTask(info, ctx.UploadTimeout); err != nil {
+			info, err = waitOnTask(ctx, info, ctx.UploadTimeout)
+			fmt.Printf("got result for task %s at %d\n", image.Id, time.Now().Unix())
+			if err != nil {
 				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "json")
 				return
 			}
@@ -128,7 +136,8 @@ func pageUpload(ctx PageContext) http.Handler {
 			return
 		} else {
 			user := parseUser(r)
-			if err := formatTemplate(w, "upload.html", IndexData{
+			if err := formatTemplate(w, "upload.html", UploadData{
+				ctx.Config.BaseUrl,
 				user,
 			}); err != nil {
 				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")

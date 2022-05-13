@@ -38,20 +38,20 @@
     <div class="url">
       <p>Detail Page</p>
       <div>
-        <input id="url_full" type="text" value="https://i.k8r.eu/i/{{.Image.Id}}">
+        <input id="url_full" type="text" value="{{ .BaseUrl }}/i/{{.Image.Id}}">
         <button class="copy" data-target="#url_full">Copy</button>
       </div>
     </div>
     <div class="url">
       <p>Direct Link</p>
       <div>
-        <input id="url_direct" type="text" value="https://i.k8r.eu/{{.Image.Id}}.png">
+        <input id="url_direct" type="text" value="{{ .BaseUrl }}/{{.Image.Id}}.png">
         <button class="copy" data-target="#url_direct">Copy</button>
       </div>
     </div>
   </div>
 </div>
 {{if .IsMine}}
-<script src="/assets/js/page_image_detail.js"></script>
+  <script src="/assets/js/page_image_detail.js"></script>
 {{end}}
 {{end}}

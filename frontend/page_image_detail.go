@@ -10,9 +10,10 @@ import (
 )
 
 type ImageDetailData struct {
-	User   UserInfo
-	Image  shared.Image
-	IsMine bool
+	User    UserInfo
+	Image   shared.Image
+	IsMine  bool
+	BaseUrl string
 }
 
 func pageImageDetail(ctx PageContext) http.Handler {
@@ -86,6 +87,7 @@ func pageImageDetail(ctx PageContext) http.Handler {
 				user,
 				info,
 				owner == user.Id,
+				ctx.Config.BaseUrl,
 			}); err != nil {
 				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")
 				return

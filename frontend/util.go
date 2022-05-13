@@ -30,13 +30,14 @@ func (info UserInfo) HasRole(role string) bool {
 }
 
 type PageContext struct {
-	Context       context.Context
-	Config        *shared.Config
-	Async         *asynq.Client
-	UploadTimeout time.Duration
-	Database      *sql.DB
-	Images        http.Handler
-	AssetServer   http.Handler
+	Context        context.Context
+	Config         *shared.Config
+	AsynqClient    *asynq.Client
+	AsynqInspector *asynq.Inspector
+	UploadTimeout  time.Duration
+	Database       *sql.DB
+	Images         http.Handler
+	AssetServer    http.Handler
 }
 
 type AlbumImage struct {
@@ -106,27 +107,41 @@ func formatTemplate(w http.ResponseWriter, templateName string, data interface{}
 	return nil
 }
 
-func waitOnTask(info *asynq.TaskInfo, timeout time.Duration) error {
+func waitOnTask(ctx PageContext, info *asynq.TaskInfo, timeout time.Duration) (*asynq.TaskInfo, error) {
 	total := time.Duration(0)
-	for total < timeout && info.State != asynq.TaskStateCompleted {
-		for info.State == asynq.TaskStateScheduled {
-			duration := info.NextProcessAt.Sub(time.Now())
-			total += duration
-			if total < timeout {
-				time.Sleep(duration)
-			}
+	info, err := ctx.AsynqInspector.GetTaskInfo(info.Queue, info.ID)
+	if err != nil {
+		return nil, err
+	}
+	// Wait for it being scheduled
+	for total < timeout && info.State == asynq.TaskStateScheduled {
+		duration := info.NextProcessAt.Sub(time.Now())
+		total += duration
+		if total < timeout {
+			time.Sleep(duration)
 		}
-		if info.State != asynq.TaskStateCompleted {
-			duration := time.Duration(1 * time.Second)
-			total += duration
-			if total < timeout {
-				time.Sleep(duration)
-			}
+		info, err = ctx.AsynqInspector.GetTaskInfo(info.Queue, info.ID)
+		if err != nil {
+			return nil, err
+		}
+	}
+	// Wait for it being completed
+	for total < timeout && info.State != asynq.TaskStateArchived && info.State != asynq.TaskStateCompleted {
+		duration := 1 * time.Second
+		total += duration
+		if total < timeout {
+			time.Sleep(duration)
+		}
+		info, err = ctx.AsynqInspector.GetTaskInfo(info.Queue, info.ID)
+		if err != nil {
+			return nil, err
 		}
 	}
 	if info.State == asynq.TaskStateCompleted {
-		return nil
+		return info, nil
+	} else if info.State == asynq.TaskStateArchived {
+		return info, fmt.Errorf("error executing task: %s (%s), has status %s", info.Type, info.ID, info.State)
 	} else {
-		return fmt.Errorf("timed out waiting on task: %s (%s)", info.Type, info.ID)
+		return info, fmt.Errorf("task timed out: %s (%s), has status %s", info.Type, info.ID, info.State)
 	}
 }

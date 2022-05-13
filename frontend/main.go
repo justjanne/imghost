@@ -29,6 +29,7 @@ func main() {
 		context.Background(),
 		&config,
 		asynq.NewClient(config.AsynqOpts()),
+		asynq.NewInspector(config.AsynqOpts()),
 		config.UploadTimeoutDuration(),
 		db,
 		http.FileServer(http.Dir(config.TargetFolder)),
