@@ -10,14 +10,14 @@
             {{if .HasRole "imghost:user" }}
                 <li class="images"><a class="button" href="/me/images">My Images</a></li>
                 <li class="albums"><a class="button" href="/me/albums">My Albums</a></li>
+                {{if .HasRole "imghost:admin" }}
+                    <li><a class="button" href="/admin">Admin</a></li>
+                {{end}}
                 <li class="me"><a class="button" href="https://accounts.kuschku.de/profile">{{.Name}}</a></li>
             {{else if .Id }}
                 <li class="me"><a class="button" href="https://accounts.kuschku.de/profile">{{.Name}}</a></li>
             {{else}}
                 <li><a class="button" href="/me/images">Login</a></li>
-            {{end}}
-            {{if .HasRole "imghost:admin" }}
-                <li><a class="button" href="/admin">Admin</a></li>
             {{end}}
         </ul>
 </nav>
