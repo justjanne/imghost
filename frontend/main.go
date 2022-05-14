@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"git.kuschku.de/justjanne/imghost/shared"
 	"github.com/hibiken/asynq"
+	"github.com/hibiken/asynqmon"
 	_ "github.com/lib/pq"
 	"log"
 	"net/http"
@@ -35,6 +36,14 @@ func main() {
 		http.FileServer(http.Dir(config.TargetFolder)),
 		http.FileServer(http.Dir("assets")),
 	}
+
+	monitor := asynqmon.New(asynqmon.Options{
+		RootPath:         "/admin",
+		RedisConnOpt:     config.AsynqOpts(),
+		PayloadFormatter: asynqmon.PayloadFormatterFunc(shared.FormatPayload),
+		ResultFormatter:  asynqmon.ResultFormatterFunc(shared.FormatResult),
+	})
+	http.Handle(monitor.RootPath()+"/", monitor)
 
 	http.Handle("/upload/", pageUpload(pageContext))
 

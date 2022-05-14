@@ -16,6 +16,9 @@
             {{else}}
                 <li><a class="button" href="/me/images">Login</a></li>
             {{end}}
+            {{if .HasRole "imghost:admin" }}
+                <li><a class="button" href="/admin">Admin</a></li>
+            {{end}}
         </ul>
 </nav>
 {{end}}
