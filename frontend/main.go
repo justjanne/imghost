@@ -5,8 +5,11 @@ import (
 	"database/sql"
 	"git.kuschku.de/justjanne/imghost/shared"
 	"github.com/hibiken/asynq"
+	"github.com/hibiken/asynq/x/metrics"
 	"github.com/hibiken/asynqmon"
 	_ "github.com/lib/pq"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"
 	"mime"
 	"net/http"
@@ -52,6 +55,10 @@ func main() {
 		}),
 	)
 	http.Handle(monitor.RootPath()+"/", monitor)
+
+	reg := prometheus.NewPedanticRegistry()
+	reg.MustRegister(metrics.NewQueueMetricsCollector(asynq.NewInspector(config.AsynqOpts())))
+	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 
 	http.Handle("/upload/", pageUpload(pageContext))
 
