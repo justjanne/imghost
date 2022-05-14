@@ -8,8 +8,10 @@ import (
 	"github.com/hibiken/asynqmon"
 	_ "github.com/lib/pq"
 	"log"
+	"mime"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 func main() {
@@ -43,6 +45,12 @@ func main() {
 		PayloadFormatter: asynqmon.PayloadFormatterFunc(shared.FormatPayload),
 		ResultFormatter:  asynqmon.ResultFormatterFunc(shared.FormatResult),
 	})
+	http.Handle(monitor.RootPath()+"/static/",
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Content-Type", mime.TypeByExtension(filepath.Ext(r.URL.Path)))
+			monitor.ServeHTTP(w, r)
+		}),
+	)
 	http.Handle(monitor.RootPath()+"/", monitor)
 
 	http.Handle("/upload/", pageUpload(pageContext))
