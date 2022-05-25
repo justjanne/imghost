@@ -3,7 +3,7 @@ package shared
 import (
 	"git.kuschku.de/justjanne/imghost/imgconv"
 	"github.com/hibiken/asynq"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 	"log"
 	"os"
 	"time"
