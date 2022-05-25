@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"git.kuschku.de/justjanne/imghost/shared"
 	"github.com/hibiken/asynq"
+	_ "github.com/lib/pq"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
