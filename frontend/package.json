@@ -1,9 +1,9 @@
 {
   "scripts": {
-    "sass": "node_modules/node-sass/bin/node-sass --output-style compressed assets/sass -o assets/css",
+    "sass": "node_modules/sass/sass.js --style compressed assets/sass:assets/css",
     "build": "npm run sass"
   },
   "devDependencies": {
-    "node-sass": "^7.0.1"
+    "sass": "^1.52.1"
   }
 }
