@@ -18,9 +18,9 @@ type ImageListData struct {
 
 const PageSize = 30
 
-func paginateImageListQuery(ctx PageContext, user UserInfo, offset int64, pageSize int) (*sql.Rows, error) {
+func paginateImageListQuery(env PageEnvironment, user UserInfo, offset int64, pageSize int) (*sql.Rows, error) {
 	if offset == 0 {
-		return ctx.Database.Query(`
+		return env.Database.Query(`
 			SELECT
 				id,
 				coalesce(title,  ''),
@@ -34,7 +34,7 @@ func paginateImageListQuery(ctx PageContext, user UserInfo, offset int64, pageSi
 			LIMIT $2
 		`, user.Id, pageSize)
 	} else {
-		return ctx.Database.Query(`
+		return env.Database.Query(`
 			SELECT
 				id,
 				coalesce(title,  ''),
@@ -51,7 +51,7 @@ func paginateImageListQuery(ctx PageContext, user UserInfo, offset int64, pageSi
 	}
 }
 
-func pageImageList(ctx PageContext) http.Handler {
+func pageImageList(ctx PageEnvironment) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := parseUser(r)
 		_, page := path.Split(r.URL.Path)

@@ -1,6 +1,7 @@
 package shared
 
 import (
+	"git.kuschku.de/justjanne/imghost/imgconv"
 	"time"
 )
 
@@ -14,7 +15,8 @@ type Image struct {
 }
 
 type Result struct {
-	Id      string   `json:"id"`
-	Success bool     `json:"success"`
-	Errors  []string `json:"errors"`
+	Id       string           `json:"id"`
+	Success  bool             `json:"success"`
+	Errors   []string         `json:"errors"`
+	Metadata imgconv.Metadata `json:"metadata"`
 }

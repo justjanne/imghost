@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"git.kuschku.de/justjanne/imghost/shared"
 	"github.com/hibiken/asynq"
 	"github.com/prometheus/client_golang/prometheus"
@@ -32,6 +33,16 @@ func main() {
 	}
 	config := shared.LoadConfigFromFile(configFile)
 
+	db, err := sql.Open(config.Database.Format, config.Database.Url)
+	if err != nil {
+		log.Fatalf("error connecting to database: %s", err.Error())
+	}
+
+	env := ProcessingEnvironment{
+		Config:   &config,
+		Database: db,
+	}
+
 	imagick.Initialize()
 	defer imagick.Terminate()
 
@@ -41,7 +52,7 @@ func main() {
 	)
 
 	mux := asynq.NewServeMux()
-	mux.HandleFunc(shared.TypeImageResize, ProcessImageHandler(&config))
+	mux.HandleFunc(shared.TypeImageResize, ProcessImageHandler(env))
 
 	metricsMux := http.NewServeMux()
 	metricsMux.Handle("/metrics", promhttp.Handler())

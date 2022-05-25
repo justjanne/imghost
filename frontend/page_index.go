@@ -5,10 +5,6 @@ import (
 	"strings"
 )
 
-type IndexData struct {
-	User UserInfo
-}
-
 func removeFileExtensions(path string) string {
 	var i = strings.IndexByte(path, '.')
 	if i < 0 {
@@ -18,7 +14,7 @@ func removeFileExtensions(path string) string {
 	}
 }
 
-func pageIndex(ctx PageContext) http.Handler {
+func pageIndex(ctx PageEnvironment) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/" {
 			http.Redirect(w, r, "/me/images", http.StatusFound)

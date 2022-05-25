@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"git.kuschku.de/justjanne/imghost/shared"
 	"github.com/hibiken/asynq"
@@ -31,8 +30,11 @@ func main() {
 		log.Fatalf("error connecting to database: %s", err.Error())
 	}
 
-	pageContext := PageContext{
-		context.Background(),
+	if err := Migrate(db); err != nil {
+		log.Fatalf("error migrating database: %s", err.Error())
+	}
+
+	env := PageEnvironment{
 		&config,
 		asynq.NewClient(config.AsynqOpts()),
 		asynq.NewInspector(config.AsynqOpts()),
@@ -60,17 +62,17 @@ func main() {
 	reg.MustRegister(metrics.NewQueueMetricsCollector(asynq.NewInspector(config.AsynqOpts())))
 	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 
-	http.Handle("/upload/", pageUpload(pageContext))
+	http.Handle("/upload/", pageUpload(env))
 
-	http.Handle("/i/", http.StripPrefix("/i/", pageImageDetail(pageContext)))
-	http.Handle("/a/", http.StripPrefix("/a/", pageAlbumDetail(pageContext)))
+	http.Handle("/i/", http.StripPrefix("/i/", pageImageDetail(env)))
+	http.Handle("/a/", http.StripPrefix("/a/", pageAlbumDetail(env)))
 
-	http.Handle("/me/images/", pageImageList(pageContext))
-	http.Handle("/assets/", http.StripPrefix("/assets/", pageContext.AssetServer))
-	http.Handle("/", pageIndex(pageContext))
+	http.Handle("/me/images/", pageImageList(env))
+	http.Handle("/assets/", http.StripPrefix("/assets/", env.AssetServer))
+	http.Handle("/", pageIndex(env))
 
 	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("OK"))
+		_, _ = w.Write([]byte("OK"))
 	})
 
 	if err := http.ListenAndServe(":8080", nil); err != nil {

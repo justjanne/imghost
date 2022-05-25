@@ -79,7 +79,7 @@ func createImage(config *shared.Config, body io.ReadCloser, fileHeader *multipar
 	return image, nil
 }
 
-func pageUpload(ctx PageContext) http.Handler {
+func pageUpload(env PageEnvironment) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "POST" {
 			user := parseUser(r)
@@ -95,13 +95,13 @@ func pageUpload(ctx PageContext) http.Handler {
 				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "json")
 				return
 			}
-			image, err := createImage(ctx.Config, file, header)
+			image, err := createImage(env.Config, file, header)
 			if err != nil {
 				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "json")
 				return
 			}
 
-			if _, err = ctx.Database.Exec("INSERT INTO images (id, owner, created_at, updated_at, original_name, type) VALUES ($1, $2, $3, $4, $5, $6)", image.Id, user.Id, image.CreatedAt, image.CreatedAt, image.OriginalName, image.MimeType); err != nil {
+			if _, err = env.Database.Exec("INSERT INTO images (id, owner, created_at, updated_at, original_name, type) VALUES ($1, $2, $3, $4, $5, $6)", image.Id, user.Id, image.CreatedAt, image.CreatedAt, image.OriginalName, image.MimeType); err != nil {
 				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "json")
 				return
 			}
@@ -112,13 +112,13 @@ func pageUpload(ctx PageContext) http.Handler {
 				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "json")
 				return
 			}
-			info, err := ctx.AsynqClient.Enqueue(t, asynq.Retention(ctx.UploadTimeout))
+			info, err := env.AsynqClient.Enqueue(t, asynq.Retention(env.UploadTimeout))
 			fmt.Printf("submitted task %s at %d\n", image.Id, time.Now().Unix())
 			if err != nil {
 				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "json")
 				return
 			}
-			info, err = waitOnTask(ctx, info, ctx.UploadTimeout)
+			info, err = waitOnTask(env, info, env.UploadTimeout)
 			fmt.Printf("got result for task %s at %d\n", image.Id, time.Now().Unix())
 			if err != nil {
 				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "json")
@@ -137,7 +137,7 @@ func pageUpload(ctx PageContext) http.Handler {
 		} else {
 			user := parseUser(r)
 			if err := formatTemplate(w, "upload.html", UploadData{
-				ctx.Config.BaseUrl,
+				env.Config.BaseUrl,
 				user,
 			}); err != nil {
 				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")

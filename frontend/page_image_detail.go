@@ -16,12 +16,12 @@ type ImageDetailData struct {
 	BaseUrl string
 }
 
-func pageImageDetail(ctx PageContext) http.Handler {
+func pageImageDetail(env PageEnvironment) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := parseUser(r)
 		_, imageId := path.Split(r.URL.Path)
 
-		result, err := ctx.Database.Query(`
+		result, err := env.Database.Query(`
 			SELECT
 				id,
 				owner,
@@ -49,7 +49,7 @@ func pageImageDetail(ctx PageContext) http.Handler {
 
 			switch r.PostFormValue("action") {
 			case "update":
-				if _, err := ctx.Database.Exec(
+				if _, err := env.Database.Exec(
 					"UPDATE images SET title = $1, description = $2 WHERE id = $3 AND owner = $4",
 					r.PostFormValue("title"),
 					r.PostFormValue("description"),
@@ -69,12 +69,12 @@ func pageImageDetail(ctx PageContext) http.Handler {
 				}
 				return
 			case "delete":
-				if _, err := ctx.Database.Exec("DELETE FROM images WHERE id = $1 AND owner = $2", info.Id, user.Id); err != nil {
+				if _, err := env.Database.Exec("DELETE FROM images WHERE id = $1 AND owner = $2", info.Id, user.Id); err != nil {
 					formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")
 					return
 				}
-				for _, definition := range ctx.Config.Sizes {
-					if err := os.Remove(path.Join(ctx.Config.TargetFolder, fmt.Sprintf("%s%s", info.Id, definition.Suffix))); err != nil {
+				for _, definition := range env.Config.Sizes {
+					if err := os.Remove(path.Join(env.Config.TargetFolder, fmt.Sprintf("%s%s", info.Id, definition.Suffix))); err != nil {
 						formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")
 						return
 					}
@@ -87,7 +87,7 @@ func pageImageDetail(ctx PageContext) http.Handler {
 				user,
 				info,
 				owner == user.Id,
-				ctx.Config.BaseUrl,
+				env.Config.BaseUrl,
 			}); err != nil {
 				formatError(w, ErrorData{http.StatusInternalServerError, user, r.URL, err}, "html")
 				return

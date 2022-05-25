@@ -11,12 +11,12 @@ type AlbumDetailData struct {
 	IsMine bool
 }
 
-func pageAlbumDetail(ctx PageContext) http.Handler {
+func pageAlbumDetail(env PageEnvironment) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := parseUser(r)
 
 		_, albumId := path.Split(r.URL.Path)
-		result, err := ctx.Database.Query(`
+		result, err := env.Database.Query(`
 			SELECT
 				id,
 				owner,
@@ -40,7 +40,7 @@ func pageAlbumDetail(ctx PageContext) http.Handler {
 				return
 			}
 
-			result, err := ctx.Database.Query(`
+			result, err := env.Database.Query(`
 			SELECT
 				image,
 				title,

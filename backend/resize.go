@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"git.kuschku.de/justjanne/imghost/imgconv"
-	"git.kuschku.de/justjanne/imghost/shared"
 	"gopkg.in/gographics/imagick.v2/imagick"
 	"log"
 	"os"
@@ -11,7 +10,7 @@ import (
 	"time"
 )
 
-func ResizeImage(config *shared.Config, imageId string) []error {
+func ResizeImage(env ProcessingEnvironment, imageId string) []error {
 	var err error
 
 	log.Printf("creating magick wand for %s", imageId)
@@ -20,7 +19,7 @@ func ResizeImage(config *shared.Config, imageId string) []error {
 
 	startRead := time.Now().UTC()
 	log.Printf("reading image for %s", imageId)
-	if err = wand.ReadImage(filepath.Join(config.SourceFolder, imageId)); err != nil {
+	if err = wand.ReadImage(filepath.Join(env.Config.SourceFolder, imageId)); err != nil {
 		return []error{err}
 	}
 	log.Printf("importing image for %s", imageId)
@@ -31,9 +30,9 @@ func ResizeImage(config *shared.Config, imageId string) []error {
 	trackTimeSince(imageProcessDurationRead, startRead)
 
 	log.Printf("launching resize goroutines for %s", imageId)
-	return runMany(len(config.Sizes), func(index int) error {
-		definition := config.Sizes[index]
-		path := filepath.Join(config.TargetFolder, fmt.Sprintf("%s%s", imageId, definition.Suffix))
+	errors := runMany(len(env.Config.Sizes), func(index int) error {
+		definition := env.Config.Sizes[index]
+		path := filepath.Join(env.Config.TargetFolder, fmt.Sprintf("%s%s", imageId, definition.Suffix))
 		startClone := time.Now().UTC()
 		log.Printf("cloning image for %s in %v", imageId, definition)
 		image := originalImage.CloneImage()
@@ -54,7 +53,7 @@ func ResizeImage(config *shared.Config, imageId string) []error {
 			return err
 		}
 		log.Printf("writing image for %s in %v", imageId, definition)
-		if err := image.WriteImageFile(config.Quality, target); err != nil {
+		if err := image.WriteImageFile(env.Config.Quality, target); err != nil {
 			return err
 		}
 		log.Printf("tracking time for %s in %v", imageId, definition)
@@ -62,4 +61,10 @@ func ResizeImage(config *shared.Config, imageId string) []error {
 		log.Printf("done with image for %s in %v", imageId, definition)
 		return nil
 	})
+	if len(errors) == 0 {
+		if _, err = env.Database.Exec("UPDATE images SET metadata = $2 WHERE id = $1", imageId, originalImage.ParseMetadata()); err != nil {
+			return []error{err}
+		}
+	}
+	return errors
 }

@@ -20,7 +20,7 @@ func trackTimeSince(counter prometheus.Counter, start time.Time) time.Time {
 	return now
 }
 
-func ProcessImageHandler(config *shared.Config) asynq.HandlerFunc {
+func ProcessImageHandler(env ProcessingEnvironment) asynq.HandlerFunc {
 	return func(ctx context.Context, t *asynq.Task) error {
 		log.Printf("received image resize task")
 		task := shared.ImageTaskPayload{}
@@ -29,9 +29,9 @@ func ProcessImageHandler(config *shared.Config) asynq.HandlerFunc {
 		}
 
 		log.Printf("starting image resize task %s", task.ImageId)
-		errors := ResizeImage(config, task.ImageId)
+		errors := ResizeImage(env, task.ImageId)
 		log.Printf("deleting cached image for image resize task %s", task.ImageId)
-		_ = os.Remove(filepath.Join(config.SourceFolder, task.ImageId))
+		_ = os.Remove(filepath.Join(env.Config.SourceFolder, task.ImageId))
 
 		errorMessages := make([]string, len(errors))
 		for i, err := range errors {
