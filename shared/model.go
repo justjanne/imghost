@@ -1,6 +1,7 @@
-package main
+package shared
 
 import (
+	"git.kuschku.de/justjanne/imghost/imgconv"
 	"net/http"
 	"strings"
 	"time"
@@ -13,7 +14,7 @@ type UserInfo struct {
 	Roles []string
 }
 
-func parseUser(r *http.Request) UserInfo {
+func ParseUser(r *http.Request) UserInfo {
 	return UserInfo{
 		r.Header.Get("X-Auth-Subject"),
 		r.Header.Get("X-Auth-Username"),
@@ -29,6 +30,22 @@ func (info UserInfo) HasRole(role string) bool {
 		}
 	}
 	return false
+}
+
+type Result struct {
+	Id       string           `json:"id"`
+	Success  bool             `json:"success"`
+	Errors   []string         `json:"errors"`
+	Metadata imgconv.Metadata `json:"metadata"`
+}
+
+type Image struct {
+	Id           string `json:"id"`
+	Title        string
+	Description  string
+	CreatedAt    time.Time
+	OriginalName string
+	MimeType     string `json:"mimeType"`
 }
 
 type AlbumImage struct {

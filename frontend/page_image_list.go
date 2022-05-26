@@ -9,7 +9,7 @@ import (
 )
 
 type ImageListData struct {
-	User     UserInfo
+	User     shared.UserInfo
 	Images   []shared.Image
 	Previous int64
 	Current  int64
@@ -18,16 +18,16 @@ type ImageListData struct {
 
 const PageSize = 30
 
-func paginateImageListQuery(env PageEnvironment, user UserInfo, offset int64, pageSize int) (*sql.Rows, error) {
+func paginateImageListQuery(env PageEnvironment, user shared.UserInfo, offset int64, pageSize int) (*sql.Rows, error) {
 	if offset == 0 {
 		return env.Database.Query(`
 			SELECT
 				id,
-				coalesce(title,  ''),
-				coalesce(description, ''),
-        		coalesce(created_at, to_timestamp(0)),
-				coalesce(original_name, ''),
-				coalesce(type, '')
+				title,
+				description,
+        		created_at,
+				original_name,
+				type
 			FROM images
 			WHERE owner = $1
 			ORDER BY created_at DESC
@@ -37,11 +37,11 @@ func paginateImageListQuery(env PageEnvironment, user UserInfo, offset int64, pa
 		return env.Database.Query(`
 			SELECT
 				id,
-				coalesce(title,  ''),
-				coalesce(description, ''),
-        		coalesce(created_at, to_timestamp(0)),
-				coalesce(original_name, ''),
-				coalesce(type, '')
+				title,
+				description,
+        		created_at,
+				original_name,
+				type
 			FROM images
 			WHERE owner = $1
 			ORDER BY created_at DESC
@@ -53,7 +53,7 @@ func paginateImageListQuery(env PageEnvironment, user UserInfo, offset int64, pa
 
 func pageImageList(ctx PageEnvironment) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := parseUser(r)
+		user := shared.ParseUser(r)
 		_, page := path.Split(r.URL.Path)
 		var pageNumber int64
 		pageNumber, err := strconv.ParseInt(page, 10, 64)

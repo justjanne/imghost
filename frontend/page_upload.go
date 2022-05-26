@@ -17,7 +17,7 @@ import (
 
 type UploadData struct {
 	BaseUrl string
-	User    UserInfo
+	User    shared.UserInfo
 }
 
 func detectMimeType(path string) (string, error) {
@@ -35,11 +35,13 @@ func detectMimeType(path string) (string, error) {
 	return http.DetectContentType(buffer), nil
 }
 
-func generateId() string {
+func generateId() (string, error) {
 	buffer := make([]byte, 4)
-	rand.Read(buffer)
+	if _, err := rand.Read(buffer); err != nil {
+		return "", err
+	}
 
-	return base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(buffer)
+	return base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(buffer), nil
 }
 
 func writeBody(reader io.ReadCloser, path string) error {
@@ -57,11 +59,13 @@ func writeBody(reader io.ReadCloser, path string) error {
 }
 
 func createImage(config *shared.Config, body io.ReadCloser, fileHeader *multipart.FileHeader) (shared.Image, error) {
-	id := generateId()
+	id, err := generateId()
+	if err != nil {
+		return shared.Image{}, err
+	}
 	path := filepath.Join(config.SourceFolder, id)
 
-	err := writeBody(body, path)
-	if err != nil {
+	if err := writeBody(body, path); err != nil {
 		return shared.Image{}, err
 	}
 
@@ -82,7 +86,7 @@ func createImage(config *shared.Config, body io.ReadCloser, fileHeader *multipar
 func pageUpload(env PageEnvironment) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "POST" {
-			user := parseUser(r)
+			user := shared.ParseUser(r)
 
 			err := r.ParseMultipartForm(32 << 20)
 			if err != nil {
@@ -135,7 +139,7 @@ func pageUpload(env PageEnvironment) http.Handler {
 			}
 			return
 		} else {
-			user := parseUser(r)
+			user := shared.ParseUser(r)
 			if err := formatTemplate(w, "upload.html", UploadData{
 				env.Config.BaseUrl,
 				user,

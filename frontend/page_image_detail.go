@@ -10,7 +10,7 @@ import (
 )
 
 type ImageDetailData struct {
-	User    UserInfo
+	User    shared.UserInfo
 	Image   shared.Image
 	IsMine  bool
 	BaseUrl string
@@ -18,18 +18,18 @@ type ImageDetailData struct {
 
 func pageImageDetail(env PageEnvironment) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := parseUser(r)
+		user := shared.ParseUser(r)
 		_, imageId := path.Split(r.URL.Path)
 
 		result, err := env.Database.Query(`
 			SELECT
 				id,
 				owner,
-				coalesce(title,  ''),
-				coalesce(description, ''),
-        		coalesce(created_at, to_timestamp(0)),
-				coalesce(original_name, ''),
-				coalesce(type, '')
+				title,
+				description,
+				created_at,
+				original_name,
+				type
 			FROM images
 			WHERE id = $1
 			`, imageId)

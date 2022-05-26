@@ -1,6 +1,7 @@
 package main
 
 import (
+	"git.kuschku.de/justjanne/imghost/shared"
 	"log"
 	"net/http"
 	"net/url"
@@ -8,7 +9,7 @@ import (
 
 type ErrorData struct {
 	Code  int
-	User  UserInfo
+	User  shared.UserInfo
 	URL   *url.URL
 	Error error
 }

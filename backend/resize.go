@@ -30,7 +30,7 @@ func ResizeImage(env ProcessingEnvironment, imageId string) []error {
 	trackTimeSince(imageProcessDurationRead, startRead)
 
 	log.Printf("launching resize goroutines for %s", imageId)
-	errors := runMany(len(env.Config.Sizes), func(index int) error {
+	return runMany(len(env.Config.Sizes), func(index int) error {
 		definition := env.Config.Sizes[index]
 		path := filepath.Join(env.Config.TargetFolder, fmt.Sprintf("%s%s", imageId, definition.Suffix))
 		startClone := time.Now().UTC()
@@ -61,10 +61,4 @@ func ResizeImage(env ProcessingEnvironment, imageId string) []error {
 		log.Printf("done with image for %s in %v", imageId, definition)
 		return nil
 	})
-	if len(errors) == 0 {
-		if _, err = env.Database.Exec("UPDATE images SET metadata = $2 WHERE id = $1", imageId, originalImage.ParseMetadata()); err != nil {
-			return []error{err}
-		}
-	}
-	return errors
 }

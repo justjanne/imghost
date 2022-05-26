@@ -6,7 +6,6 @@ create table if not exists images
     description   text  default ''   not null,
     original_name text  default ''   not null,
     type          text               not null,
-    metadata      jsonb default '{}' not null,
     created_at    timestamp          not null,
     updated_at    timestamp          not null
 );
